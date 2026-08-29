@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FantaMind</title>
+<meta name="description" content="Il banco della tua asta: listone, prezzi e caselle, anche senza rete.">
+<meta name="theme-color" content="#070908">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FantaMind">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icona-180.png">
+<link rel="icon" href="icona-192.png">
+<link rel="stylesheet" href="stile.css">
+</head>
+<body>
+
+<div class="guscio">
+
+  <nav class="barra" aria-label="Sezioni">
+    <div class="marchio">
+      <div class="segno" aria-hidden="true">F</div>
+      <div>
+        <b>FantaMind</b>
+        <span>Il banco dell'asta</span>
+      </div>
+    </div>
+
+    <button class="voce" data-vista="control" aria-current="page">
+      <span class="ico" aria-hidden="true">▣</span> Control Center
+    </button>
+    <button class="voce" data-vista="enciclopedia">
+      <span class="ico" aria-hidden="true">▤</span> Enciclopedia
+    </button>
+    <button class="voce" data-vista="asta">
+      <span class="ico" aria-hidden="true">◈</span> Asta Live
+    </button>
+    <button class="voce" data-vista="strategia">
+      <span class="ico" aria-hidden="true">◱</span> Strategia
+    </button>
+
+    <div class="pie">Serie A · <span id="pie-data">—</span></div>
+  </nav>
+
+  <main class="tela">
+
+    <!-- ------------------------------------------------ CONTROL CENTER -->
+    <section class="vista" id="vista-control">
+      <p class="occhiello">Dashboard operativa</p>
+      <h1>Control Center</h1>
+      <p class="sottotitolo">Dove sei nell'asta, e cosa manca.</p>
+
+      <div class="griglia q4">
+        <div class="pannello cifra">
+          <div class="bollo" aria-hidden="true">◎</div>
+          <div class="valore" id="kpi-listone">—</div>
+          <div class="etichetta">Giocatori nel listone</div>
+        </div>
+        <div class="pannello cifra">
+          <div class="bollo" aria-hidden="true">◈</div>
+          <div class="valore verde" id="kpi-residuo">—</div>
+          <div class="etichetta">Crediti che ti restano</div>
+        </div>
+        <div class="pannello cifra">
+          <div class="bollo" aria-hidden="true">▦</div>
+          <div class="valore" id="kpi-slot">—</div>
+          <div class="etichetta">Caselle riempite</div>
+        </div>
+        <div class="pannello cifra">
+          <div class="bollo" aria-hidden="true">✚</div>
+          <div class="valore rosso" id="kpi-fermi">—</div>
+          <div class="etichetta">Fermi adesso nel listone</div>
+        </div>
+      </div>
+
+      <div class="griglia q2">
+        <div class="pannello">
+          <div class="intestazione-pannello">
+            <h2>La tua rosa</h2>
+            <span class="nota" id="rosa-spesa">—</span>
+          </div>
+          <div id="rosa-reparti"></div>
+          <div class="barra-spesa"><i id="barra-rosa" style="width:0%"></i></div>
+        </div>
+
+        <div class="pannello">
+          <div class="intestazione-pannello">
+            <h2>Occasioni</h2>
+            <span class="nota">rendono più di chi costa uguale</span>
+          </div>
+          <div class="elenco" id="radar-home"></div>
+        </div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Chi è fermo fra i primi cento</h2>
+          <span class="nota">dal listone di oggi</span>
+        </div>
+        <div class="elenco" id="infortunati-home"></div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------- ENCICLOPEDIA -->
+    <section class="vista" id="vista-enciclopedia" hidden>
+      <p class="occhiello">Database Serie A</p>
+      <h1>Enciclopedia</h1>
+      <p class="sottotitolo" id="enc-conteggio">—</p>
+
+      <div class="pannello">
+        <input class="campo" id="cerca" type="search" placeholder="Cerca per nome o squadra…"
+               style="width:100%;margin-bottom:14px" autocomplete="off">
+
+        <div class="riga-filtri">
+          <span class="titolo-filtro">Ruolo</span>
+          <div class="gruppo-scelte" id="filtro-ruolo">
+            <button class="scelta" data-ruolo="" aria-pressed="true">Tutti</button>
+            <button class="scelta" data-ruolo="P">P</button>
+            <button class="scelta" data-ruolo="D">D</button>
+            <button class="scelta" data-ruolo="C">C</button>
+            <button class="scelta" data-ruolo="A">A</button>
+          </div>
+        </div>
+
+        <div class="riga-filtri">
+          <span class="titolo-filtro">Stato</span>
+          <div class="gruppo-scelte" id="filtro-stato">
+            <button class="scelta" data-stato="" aria-pressed="true">Tutti</button>
+            <button class="scelta" data-stato="liberi">Ancora liberi</button>
+            <button class="scelta" data-stato="sani">Non fermi</button>
+            <button class="scelta" data-stato="storico">Con storico</button>
+          </div>
+        </div>
+
+        <div class="riga-filtri">
+          <span class="titolo-filtro">Fascia</span>
+          <div class="gruppo-scelte" id="filtro-fascia">
+            <button class="scelta" data-fascia="" aria-pressed="true">Tutte</button>
+            <button class="scelta" data-fascia="1">1</button>
+            <button class="scelta" data-fascia="2">2</button>
+            <button class="scelta" data-fascia="3">3</button>
+            <button class="scelta" data-fascia="4">4</button>
+            <button class="scelta" data-fascia="5">5</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pannello" style="overflow-x:auto">
+        <table class="tabella">
+          <thead>
+            <tr>
+              <th>Giocatore</th>
+              <th class="no-mobile">Ruolo</th>
+              <th><button data-ordine="p" aria-sort="descending">Prezzo</button></th>
+              <th><button data-ordine="y">Resa</button></th>
+              <th class="no-mobile"><button data-ordine="c">Certezza</button></th>
+              <th class="no-mobile"><button data-ordine="v">Vantaggio</button></th>
+              <th class="no-mobile">Fascia</th>
+              <th>Stato</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-tabella"></tbody>
+        </table>
+        <div class="vuoto" id="tabella-vuota" hidden>
+          Nessun giocatore con questi filtri. Togline uno.
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------ ASTA LIVE -->
+    <section class="vista" id="vista-asta" hidden>
+      <p class="occhiello">Copilota in tempo reale</p>
+      <div class="testata-riga">
+        <div>
+          <h1>Asta Live</h1>
+          <p class="sottotitolo">Registra gli acquisti e vedi quanto puoi ancora spendere.</p>
+        </div>
+        <button class="bottone fantasma" id="annulla">Annulla l'ultimo</button>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>La tua lega</h2>
+          <span class="nota">cambia tutti i prezzi</span>
+        </div>
+        <div class="riga-filtri">
+          <span class="titolo-filtro">Squadre</span>
+          <div class="gruppo-scelte" id="scelta-squadre"></div>
+        </div>
+        <div class="riga-filtri">
+          <span class="titolo-filtro">Crediti</span>
+          <div class="gruppo-scelte" id="scelta-budget"></div>
+        </div>
+      </div>
+
+      <div class="griglia q4">
+        <div class="pannello cifra">
+          <div class="valore verde" id="asta-residuo">—</div>
+          <div class="etichetta">Crediti residui</div>
+        </div>
+        <div class="pannello cifra">
+          <div class="valore" id="asta-slot">—</div>
+          <div class="etichetta">Caselle riempite</div>
+        </div>
+        <div class="pannello cifra">
+          <div class="valore ambra" id="asta-max">—</div>
+          <div class="etichetta" id="asta-max-etichetta">Massimo per questa casella</div>
+        </div>
+        <div class="pannello cifra">
+          <div class="valore" id="asta-medio">—</div>
+          <div class="etichetta">Ti resta per casella</div>
+        </div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Registra un acquisto</h2>
+          <span class="nota" id="asta-suggerito">—</span>
+        </div>
+        <div class="riga-filtri">
+          <input class="campo" id="asta-cerca" type="search"
+                 placeholder="Chi è all'asta adesso?" autocomplete="off"
+                 style="flex:1;min-width:180px">
+          <input class="campo" id="asta-prezzo" type="number" min="1" inputmode="numeric"
+                 placeholder="Prezzo" style="width:110px">
+          <button class="bottone" id="asta-mio">L'ho preso io</button>
+          <button class="bottone fantasma" id="asta-altri">Preso da altri</button>
+        </div>
+        <div class="elenco" id="asta-risultati"></div>
+      </div>
+
+      <div class="griglia q2">
+        <div class="pannello">
+          <div class="intestazione-pannello">
+            <h2>Il piano per il prossimo reparto</h2>
+            <span class="nota" id="piano-reparto">—</span>
+          </div>
+          <div id="piano-spesa"></div>
+        </div>
+
+        <div class="pannello">
+          <div class="intestazione-pannello">
+            <h2>Occasioni ancora libere</h2>
+            <span class="nota">a pari prezzo rendono di più</span>
+          </div>
+          <div class="elenco" id="radar-asta"></div>
+        </div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>La tua rosa</h2>
+          <span class="nota" id="asta-rosa-nota">—</span>
+        </div>
+        <div class="elenco" id="asta-rosa"></div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Se qualcosa va storto</h2>
+          <span class="nota">fallo una volta a metà asta</span>
+        </div>
+        <div class="riga-filtri">
+          <button class="bottone fantasma" id="salva-copia">Salva una copia</button>
+          <button class="bottone fantasma" id="rimetti-dentro">Rimetti dentro</button>
+          <button class="bottone fantasma" id="copia-rosa">Copia la rosa</button>
+          <button class="bottone fantasma" id="azzera">Ricomincia da capo</button>
+          <input type="file" id="file-backup" accept="application/json" hidden>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------ STRATEGIA -->
+    <section class="vista" id="vista-strategia" hidden>
+      <p class="occhiello">Preparazione</p>
+      <h1>Strategia d'asta</h1>
+      <p class="sottotitolo">Quanto mettere su ogni reparto, e chi guardare.</p>
+
+      <div class="griglia q4" id="riparto-reparti"></div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Chi puntare, reparto per reparto</h2>
+          <span class="nota">ancora liberi, ordinati per resa</span>
+        </div>
+        <div class="griglia q4" id="top-target"></div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Come sono fatte le fasce</h2>
+          <span class="nota" id="fasce-nota">—</span>
+        </div>
+        <div id="tabella-fasce"></div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Cosa dicono i numeri della tua lega</h2>
+          <span class="nota">calcolato, non consigli generici</span>
+        </div>
+        <div class="griglia q2" id="consigli-operativi"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ---------------------------------------------------- SCHEDA GIOCATORE -->
+<div class="velo" id="velo" hidden role="dialog" aria-modal="true" aria-labelledby="scheda-nome">
+  <div class="scheda" id="scheda"></div>
+</div>
+
+<div class="messaggio" id="messaggio" hidden role="status"></div>
+
+<script src="conti.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

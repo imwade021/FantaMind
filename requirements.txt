@@ -1,0 +1,4 @@
+# Serve solo alla pipeline (pipeline/), non all'app: quella è HTML e basta.
+pandas>=2.0
+openpyxl>=3.1
+requests>=2.31
