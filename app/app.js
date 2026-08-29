@@ -85,9 +85,19 @@ const candidati = (r, tetto, quanti) => Conti.candidati(r, tetto, DATI, stato, q
 /* ============================================================= FORMATTAZIONE */
 
 function elemento(html) {
-  const contenitore = document.createElement('div');
-  contenitore.innerHTML = html.trim();
-  return contenitore.firstElementChild;
+  // Deve essere un <template>, non un <div>: il parser HTML BUTTA VIA <tr> e
+  // <td> che non stiano dentro una <table>, quindi in un div le righe della
+  // tabella perdevano le colonne e l'ultima riga spariva del tutto. Il
+  // contenuto di un template viene invece parsato senza quella regola.
+  const modello = document.createElement('template');
+  modello.innerHTML = html.trim();
+  const nodo = modello.content.firstElementChild;
+  if (!nodo) {
+    // Meglio un errore che dice quale pezzo di HTML e' malformato, che un
+    // appendChild(null) con un messaggio del browser da decifrare.
+    throw new Error(`HTML senza elementi: ${html.trim().slice(0, 60)}…`);
+  }
+  return nodo;
 }
 
 function testoSicuro(valore) {
