@@ -43,6 +43,19 @@ PRUDENZA = 8
 # Una media su 3 partite non e' paragonabile a una su 34.
 PRESENZE_CONFRONTO = 15
 
+# Il modificatore di difesa: media di portiere + 3 migliori difensori.
+# ATTENZIONE: questa tabella cambia da lega a lega. E' la piu' diffusa, ma
+# se la tua usa soglie diverse si cambia QUI, e cambia ovunque.
+MODIFICATORE_DIFESA = [
+    (7.25, 6), (7.00, 5), (6.75, 4), (6.50, 3), (6.25, 2), (6.00, 1), (0.0, 0),
+]
+
+# I moduli che l'app propone per l'undici. (difensori, centrocampisti, attaccanti)
+MODULI = {
+    '3-4-3': (3, 4, 3), '3-5-2': (3, 5, 2), '4-3-3': (4, 3, 3),
+    '4-4-2': (4, 4, 2), '4-5-1': (4, 5, 1), '5-3-2': (5, 3, 2),
+}
+
 NOMI_RUOLO = {'P': 'portieri', 'D': 'difensori',
               'C': 'centrocampisti', 'A': 'attaccanti'}
 

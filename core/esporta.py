@@ -15,9 +15,9 @@ import pandas as pd
 
 from .certezza import assenza_oggi, certezza, posizione
 from .confronti import gerarchia_rigori, occasioni, occasioni_mod, percentili_ruolo
-from .costanti import (BUDGET_AMMESSI, BUDGET_DEFAULT, ORDINE_ASTA,
-                       QUOTE_REPARTO, SLOT_ROSA, SQUADRE_AMMESSE,
-                       SQUADRE_DEFAULT, chiave_lega)
+from .costanti import (BUDGET_AMMESSI, BUDGET_DEFAULT, MODIFICATORE_DIFESA,
+                       MODULI, ORDINE_ASTA, QUOTE_REPARTO, SLOT_ROSA,
+                       SQUADRE_AMMESSE, SQUADRE_DEFAULT, chiave_lega)
 from .lettura import RADICE, carica, testo
 from .mercato import fasce, prezzi_di_mercato
 from .resa import cartellini, gol_subiti, media_ruolo, resa, rigori
@@ -191,6 +191,9 @@ def costruisci(squadre=SQUADRE_DEFAULT, budget=BUDGET_DEFAULT, percorso=None):
         # dei parametri di lega, o tornano i numeri divergenti di prima.
         'quote': QUOTE_REPARTO,
         'ordine': list(ORDINE_ASTA),
+        'modificatore': [{'da': soglia, 'bonus': bonus}
+                         for soglia, bonus in MODIFICATORE_DIFESA],
+        'moduli': {nome: list(reparti) for nome, reparti in MODULI.items()},
         'leghe': {'squadre': list(SQUADRE_AMMESSE), 'budget': list(BUDGET_AMMESSI)},
         'rotture': rotture,
         'rotture_lega': rotture_lega,
