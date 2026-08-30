@@ -28,16 +28,24 @@
     </div>
 
     <button class="voce" data-vista="control" aria-current="page">
-      <span class="ico" aria-hidden="true">▣</span> Control Center
+      <span class="ico" aria-hidden="true">▣</span>
+      <span class="lungo">Control Center</span><span class="breve">Control</span>
     </button>
     <button class="voce" data-vista="enciclopedia">
-      <span class="ico" aria-hidden="true">▤</span> Enciclopedia
+      <span class="ico" aria-hidden="true">▤</span>
+      <span class="lungo">Enciclopedia</span><span class="breve">Listone</span>
     </button>
     <button class="voce" data-vista="asta">
-      <span class="ico" aria-hidden="true">◈</span> Asta Live
+      <span class="ico" aria-hidden="true">◈</span>
+      <span class="lungo">Asta Live</span><span class="breve">Asta</span>
     </button>
     <button class="voce" data-vista="strategia">
-      <span class="ico" aria-hidden="true">◱</span> Strategia
+      <span class="ico" aria-hidden="true">◱</span>
+      <span class="lungo">Strategia</span><span class="breve">Strategia</span>
+    </button>
+    <button class="voce" data-vista="allenatore">
+      <span class="ico" aria-hidden="true">◇</span>
+      <span class="lungo">Allenatore</span><span class="breve">Allena</span>
     </button>
 
     <div class="pie">Serie A · <span id="pie-data">—</span></div>
@@ -93,6 +101,24 @@
         </div>
       </div>
 
+      <div class="griglia q2">
+        <div class="pannello">
+          <div class="intestazione-pannello">
+            <h2>Griglia portieri</h2>
+            <span class="nota">gol subiti a partita</span>
+          </div>
+          <div class="griglia-portieri" id="griglia-portieri"></div>
+        </div>
+
+        <div class="pannello">
+          <div class="intestazione-pannello">
+            <h2>Top fantamedia</h2>
+            <span class="nota">almeno 15 presenze</span>
+          </div>
+          <div class="classifica" id="top-fantamedia"></div>
+        </div>
+      </div>
+
       <div class="pannello">
         <div class="intestazione-pannello">
           <h2>Chi è fermo fra i primi cento</h2>
@@ -100,6 +126,8 @@
         </div>
         <div class="elenco" id="infortunati-home"></div>
       </div>
+
+      <div class="griglia q4" id="scorciatoie"></div>
     </section>
 
     <!-- -------------------------------------------------- ENCICLOPEDIA -->
@@ -301,6 +329,56 @@
           <span class="nota">calcolato, non consigli generici</span>
         </div>
         <div class="griglia q2" id="consigli-operativi"></div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------- ALLENATORE -->
+    <section class="vista" id="vista-allenatore" hidden>
+      <p class="occhiello">Assistente</p>
+      <h1>Allenatore</h1>
+      <p class="sottotitolo">Chi schierare, quanto vale la difesa, se lo scambio conviene.</p>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Allarmi</h2>
+          <span class="nota">chi della tua rosa è fermo</span>
+        </div>
+        <div class="elenco" id="allarmi"></div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Modulo di schieramento</h2>
+          <span class="nota" id="undici-media">—</span>
+        </div>
+        <div class="riga-filtri">
+          <span class="titolo-filtro">Modulo</span>
+          <div class="gruppo-scelte" id="scelta-modulo"></div>
+        </div>
+        <div id="undici"></div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Modificatore difesa</h2>
+          <span class="nota">portiere + 3 migliori difensori</span>
+        </div>
+        <div id="modificatore"></div>
+      </div>
+
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>Valutatore di scambi</h2>
+          <span class="nota">le differenze, non il verdetto</span>
+        </div>
+        <div class="riga-filtri">
+          <input class="campo" id="scambio-cedi" type="search" placeholder="Cedi…"
+                 autocomplete="off" style="flex:1;min-width:150px">
+          <input class="campo" id="scambio-ricevi" type="search" placeholder="Ricevi…"
+                 autocomplete="off" style="flex:1;min-width:150px">
+        </div>
+        <div class="elenco" id="scambio-risultati"></div>
+        <div id="scambio-esito"></div>
       </div>
     </section>
 

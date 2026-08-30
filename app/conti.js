@@ -178,11 +178,127 @@ const Conti = (function () {
       .slice(0, quanti);
   }
 
+
+  /* ------------------------------------------------ ALLENATORE ------- */
+
+  /** I giocatori della tua rosa, come oggetti completi. */
+  function rosaCompleta(stato, perId) {
+    return stato.rosa
+      .map((voce) => {
+        const g = perId.get(voce.id);
+        return g ? Object.assign({}, g, { pagato: voce.prezzo }) : null;
+      })
+      .filter(Boolean);
+  }
+
+  /** Chi della tua rosa e' fermo adesso. Prima i casi gravi. */
+  function allarmi(stato, perId) {
+    return rosaCompleta(stato, perId)
+      .filter((g) => g.out)
+      .sort((a, b) => (b.out.grave ? 1 : 0) - (a.out.grave ? 1 : 0));
+  }
+
+  /**
+   * L'undici migliore che la tua rosa permette con questo modulo.
+   *
+   * Il criterio e' la resa, e chi e' fermo non si schiera. Se un reparto non
+   * ha abbastanza uomini disponibili si dice quanti ne mancano, invece di
+   * riempire il buco con qualcuno fuori ruolo.
+   */
+  function undici(modulo, dati, stato, perId) {
+    const reparti = dati.moduli[modulo];
+    if (!reparti) return null;
+
+    const richiesti = { P: 1, D: reparti[0], C: reparti[1], A: reparti[2] };
+    const disponibili = rosaCompleta(stato, perId).filter((g) => !(g.out && g.out.grave));
+
+    const schierati = [];
+    const buchi = {};
+    for (const ruolo of dati.ordine) {
+      const candidati = disponibili
+        .filter((g) => g.r === ruolo)
+        .sort((a, b) => (b.y ?? -1) - (a.y ?? -1));
+      const presi = candidati.slice(0, richiesti[ruolo]);
+      schierati.push(...presi);
+      if (presi.length < richiesti[ruolo]) {
+        buchi[ruolo] = richiesti[ruolo] - presi.length;
+      }
+    }
+
+    const schieratiId = new Set(schierati.map((g) => g.id));
+    const panchina = rosaCompleta(stato, perId)
+      .filter((g) => !schieratiId.has(g.id))
+      .sort((a, b) => (b.y ?? -1) - (a.y ?? -1));
+
+    const conResa = schierati.filter((g) => g.y !== null && g.y !== undefined);
+    const media = conResa.length
+      ? conResa.reduce((somma, g) => somma + g.y, 0) / conResa.length
+      : null;
+
+    return { schierati, panchina, buchi, media, richiesti };
+  }
+
+  /**
+   * Il modificatore di difesa: media voto di portiere piu' i tre migliori
+   * difensori. Conta la MEDIA VOTO, non la fantamedia: il bonus lo fa la
+   * solidita' della retroguardia, non i gol dei terzini.
+   */
+  function modificatoreDifesa(dati, stato, perId) {
+    const rosa = rosaCompleta(stato, perId).filter((g) => g.mvp !== null && g.mvp !== undefined);
+    const portiere = rosa.filter((g) => g.r === 'P').sort((a, b) => b.mvp - a.mvp)[0];
+    const difensori = rosa.filter((g) => g.r === 'D').sort((a, b) => b.mvp - a.mvp).slice(0, 3);
+
+    if (!portiere || difensori.length < 3) {
+      return {
+        pronto: false,
+        mancaPortiere: !portiere,
+        difensori: difensori.length,
+      };
+    }
+
+    const scelti = [portiere, ...difensori];
+    const media = scelti.reduce((somma, g) => somma + g.mvp, 0) / scelti.length;
+    const scaglione = dati.modificatore.find((riga) => media >= riga.da);
+
+    return {
+      pronto: true,
+      media: Math.round(media * 100) / 100,
+      bonus: scaglione ? scaglione.bonus : 0,
+      scelti,
+    };
+  }
+
+  /**
+   * Il confronto fra due giocatori, in numeri.
+   *
+   * Non dice "conviene": dice di quanto cambiano resa, certezza e prezzo.
+   * La convenienza dipende da cosa ti serve in quel momento, e quello lo sai
+   * solo tu.
+   */
+  function confrontoScambio(cedutoId, ricevutoId, lega, perId) {
+    const ceduto = perId.get(cedutoId);
+    const ricevuto = perId.get(ricevutoId);
+    if (!ceduto || !ricevuto) return null;
+
+    const differenza = (a, b) => (a === null || a === undefined
+                                  || b === null || b === undefined) ? null : b - a;
+
+    return {
+      ceduto,
+      ricevuto,
+      stessoRuolo: ceduto.r === ricevuto.r,
+      resa: differenza(ceduto.y, ricevuto.y),
+      certezza: differenza(ceduto.c, ricevuto.c),
+      prezzo: prezzo(ricevuto, lega) - prezzo(ceduto, lega),
+    };
+  }
+
   return {
     chiaveLega, prezzo, fascia, slotTotali,
     speso, residuo, presiPerRuolo, mancanti, caselleScoperte,
     repartoInCorso, disponibilePerReparto, pianoSpesa, massimoAdesso,
     occupati, liberi, candidati,
+    rosaCompleta, allarmi, undici, modificatoreDifesa, confrontoScambio,
   };
 })();
 

@@ -681,3 +681,228 @@ h2 { margin: 0; font-size: 16.5px; font-weight: 650; letter-spacing: -0.01em; }
   .tabella { font-size: 12.5px; }
   .tabella td, .tabella th { padding: 8px 5px; }
 }
+
+/* ---------------------------------------------- GRIGLIA PORTIERI */
+
+.griglia-portieri {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+}
+
+.card-portiere {
+  background: var(--panel-alto);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 11px;
+  text-align: left;
+  width: 100%;
+}
+
+.card-portiere:hover { border-color: var(--linea-forte); }
+
+.card-portiere .alto {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: var(--ink-basso);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.card-portiere .alto b {
+  color: var(--verde);
+  font-size: 12px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-portiere .chi {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 7px;
+}
+
+.card-portiere .misure { display: flex; gap: 5px; }
+
+.misura {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--ink-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------ CLASSIFICA */
+
+.classifica { display: flex; flex-direction: column; }
+
+.posto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--linea);
+  width: 100%;
+  background: none;
+  border-left: 0; border-right: 0; border-bottom: 0;
+  text-align: left;
+}
+
+.posto:first-child { border-top: 0; }
+
+.posto .numero {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-basso);
+  width: 14px;
+}
+
+.posto .chi { flex: 1; min-width: 0; }
+.posto .chi b { display: block; font-size: 13.5px; font-weight: 600; }
+.posto .chi small { display: block; color: var(--ink-basso); font-size: 11.5px; }
+
+.posto .valore {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  color: var(--verde);
+  font-size: 14px;
+}
+
+/* ------------------------------------------------- SCORCIATOIE */
+
+.scorciatoia {
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: var(--raggio);
+  padding: 18px;
+  text-align: left;
+  width: 100%;
+}
+
+.scorciatoia:hover { border-color: var(--linea-forte); }
+
+.scorciatoia .bollo {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: var(--verde-scuro);
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.scorciatoia b { display: block; font-size: 15px; margin-bottom: 4px; }
+.scorciatoia small { color: var(--ink-medio); font-size: 12.5px; line-height: 1.4; }
+
+/* -------------------------------------------------- ALLENATORE */
+
+.reparto-campo { margin-bottom: 14px; }
+
+.reparto-campo .titolo {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-basso);
+  margin-bottom: 7px;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 7px;
+}
+
+.maglia {
+  background: var(--panel-alto);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 9px 11px;
+  text-align: left;
+  width: 100%;
+}
+
+.maglia:hover { border-color: var(--linea-forte); }
+.maglia b { display: block; font-size: 13px; font-weight: 600; }
+
+.maglia small {
+  display: block;
+  color: var(--ink-basso);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.maglia.buco {
+  border: 1px dashed var(--linea-forte);
+  background: transparent;
+  color: var(--ink-basso);
+  font-size: 12px;
+  text-align: center;
+}
+
+.scaglioni { display: flex; gap: 4px; margin-top: 12px; flex-wrap: wrap; }
+
+.scaglione {
+  flex: 1;
+  min-width: 46px;
+  background: var(--panel-alto);
+  border-radius: 7px;
+  padding: 7px 4px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--ink-basso);
+}
+
+.scaglione b { display: block; font-size: 13px; color: var(--ink-medio); }
+.scaglione.attivo { background: var(--verde-scuro); }
+.scaglione.attivo b { color: var(--verde); }
+
+.bilancia {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.piatto {
+  background: var(--panel-alto);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.piatto .n {
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.piatto .n.su { color: var(--verde); }
+.piatto .n.giu { color: var(--rosso); }
+
+.piatto .e {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-basso);
+  margin-top: 3px;
+}
+
+.breve { display: none; }
+
+@media (max-width: 860px) {
+  .griglia-portieri { grid-template-columns: repeat(2, 1fr); }
+  .lungo { display: none; }
+  .breve { display: inline; }
+  .voce { font-size: 9.5px; padding: 7px 1px; }
+  .bilancia { grid-template-columns: 1fr; }
+}

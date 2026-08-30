@@ -81,6 +81,10 @@ const disponibilePerReparto = (r) => Conti.disponibilePerReparto(r, DATI, stato,
 const pianoSpesa = (r) => Conti.pianoSpesa(r, DATI, stato, PER_ID);
 const massimoAdesso = (r) => Conti.massimoAdesso(r, DATI, stato, PER_ID);
 const candidati = (r, tetto, quanti) => Conti.candidati(r, tetto, DATI, stato, quanti);
+const rosaCompleta = () => Conti.rosaCompleta(stato, PER_ID);
+const allarmi = () => Conti.allarmi(stato, PER_ID);
+const undici = (modulo) => Conti.undici(modulo, DATI, stato, PER_ID);
+const modificatoreDifesa = () => Conti.modificatoreDifesa(DATI, stato, PER_ID);
 
 /* ============================================================= FORMATTAZIONE */
 
@@ -204,6 +208,61 @@ function disegnaControl() {
       rigaGiocatore(g, `+${g.v.toFixed(2)}`, 'sui pari prezzo')));
   }
 
+  // --- griglia portieri: i migliori otto, come nel colpo d'occhio dell'asta ---
+  const griglia = document.getElementById('griglia-portieri');
+  griglia.innerHTML = '';
+  const portieri = DATI.giocatori
+    .filter((g) => g.r === 'P' && g.y !== null && g.y !== undefined && g.pv >= 5)
+    .sort((a, b) => b.y - a.y)
+    .slice(0, 8);
+
+  if (!portieri.length) {
+    griglia.appendChild(elemento('<div class="vuoto">Nessun portiere con storico.</div>'));
+  } else {
+    for (const g of portieri) {
+      const card = elemento(`
+        <button class="card-portiere" data-id="${g.id}">
+          <span class="alto">
+            <span>${testoSicuro(g.s.slice(0, 3).toUpperCase())}</span>
+            <b>${g.y.toFixed(2)}</b>
+          </span>
+          <span class="chi">${testoSicuro(g.n)}</span>
+          <span class="misure">
+            <span class="misura">${g.gs === null || g.gs === undefined
+              ? 'GS —' : `GS ${g.gs.toFixed(2)}`}</span>
+            <span class="misura">${g.c === null || g.c === undefined
+              ? 'CRT —' : `CRT ${g.c}`}</span>
+            <span class="misura">${prezzo(g)} cr</span>
+          </span>
+        </button>`);
+      card.addEventListener('click', () => apriScheda(g.id));
+      griglia.appendChild(card);
+    }
+  }
+
+  // --- top fantamedia ---
+  const classifica = document.getElementById('top-fantamedia');
+  classifica.innerHTML = '';
+  const migliori5 = DATI.giocatori
+    .filter((g) => g.fm !== null && g.fm !== undefined && g.pv >= 15)
+    .sort((a, b) => b.fm - a.fm)
+    .slice(0, 6);
+
+  migliori5.forEach((g, indice) => {
+    const riga = elemento(`
+      <button class="posto" data-id="${g.id}">
+        <span class="numero">${indice + 1}</span>
+        <span class="ruolo ${g.r}">${g.r}</span>
+        <span class="chi">
+          <b>${testoSicuro(g.n)}</b>
+          <small>${testoSicuro(g.s)} · ${g.pv} presenze</small>
+        </span>
+        <span class="valore">${g.fm.toFixed(2)}</span>
+      </button>`);
+    riga.addEventListener('click', () => apriScheda(g.id));
+    classifica.appendChild(riga);
+  });
+
   // --- chi e' fermo fra i primi cento ---
   const elencoFermi = document.getElementById('infortunati-home');
   elencoFermi.innerHTML = '';
@@ -214,6 +273,26 @@ function disegnaControl() {
   } else {
     cari.slice(0, 8).forEach((g) => elencoFermi.appendChild(
       rigaGiocatore(g, prezzo(g), 'crediti')));
+  }
+
+  // --- scorciatoie alle altre sezioni ---
+  const scorciatoie = document.getElementById('scorciatoie');
+  scorciatoie.innerHTML = '';
+  const destinazioni = [
+    ['enciclopedia', '▤', 'Enciclopedia', 'Tutto il listone, con i filtri.'],
+    ['asta', '◈', 'Asta Live', "Registra gli acquisti e vedi quanto puoi spendere."],
+    ['strategia', '◱', 'Strategia', 'Come spartire il budget e chi puntare.'],
+    ['allenatore', '◇', 'Allenatore', 'Chi schierare e quanto vale la difesa.'],
+  ];
+  for (const [dove, segno, titolo, testo] of destinazioni) {
+    const card = elemento(`
+      <button class="scorciatoia" data-va="${dove}">
+        <span class="bollo">${segno}</span>
+        <b>${titolo}</b>
+        <small>${testo}</small>
+      </button>`);
+    card.addEventListener('click', () => cambiaVista(dove));
+    scorciatoie.appendChild(card);
   }
 }
 
@@ -586,6 +665,250 @@ function consigliCalcolati() {
   return righe;
 }
 
+/* =============================================================== ALLENATORE */
+
+let moduloScelto = '3-4-3';
+let scambioCedi = null;
+let scambioRicevi = null;
+
+function disegnaAllenatore() {
+  disegnaAllarmi();
+  disegnaUndici();
+  disegnaModificatore();
+  disegnaScambio();
+}
+
+function disegnaAllarmi() {
+  const contenitore = document.getElementById('allarmi');
+  contenitore.innerHTML = '';
+
+  if (!stato.rosa.length) {
+    contenitore.appendChild(elemento(
+      '<div class="vuoto">La rosa è vuota. Registra gli acquisti nell\'Asta Live.</div>'));
+    return;
+  }
+
+  const fermi = allarmi();
+  if (!fermi.length) {
+    contenitore.appendChild(elemento(
+      '<div class="vuoto">Nessun allarme: tutta la rosa è disponibile.</div>'));
+    return;
+  }
+
+  for (const g of fermi) {
+    const quando = g.out.dal ? ` dal ${testoSicuro(g.out.dal)}` : '';
+    const nodo = elemento(`
+      <div class="avviso ${g.out.grave ? '' : 'lieve'}">
+        <b>${testoSicuro(g.n)}</b> (${testoSicuro(g.s)}):
+        ${testoSicuro(g.out.motivo)}${quando}.
+        ${g.out.grave ? 'Non schierarlo.' : 'Salta una giornata.'}
+      </div>`);
+    contenitore.appendChild(nodo);
+  }
+}
+
+function disegnaUndici() {
+  // I moduli disponibili arrivano dal JSON: nessuna lista scritta qui dentro.
+  const scelte = document.getElementById('scelta-modulo');
+  scelte.innerHTML = '';
+  for (const nome of Object.keys(DATI.moduli)) {
+    const bottone = elemento(`<button class="scelta"
+      aria-pressed="${nome === moduloScelto}">${nome}</button>`);
+    bottone.addEventListener('click', () => {
+      moduloScelto = nome;
+      disegnaUndici();
+    });
+    scelte.appendChild(bottone);
+  }
+
+  const campo = document.getElementById('undici');
+  campo.innerHTML = '';
+  const esito = undici(moduloScelto);
+
+  document.getElementById('undici-media').textContent = esito && esito.media
+    ? `resa media ${esito.media.toFixed(2)}`
+    : '—';
+
+  if (!stato.rosa.length) {
+    campo.appendChild(elemento(
+      '<div class="vuoto">Nessun giocatore in rosa: non c\'è un undici da comporre.</div>'));
+    return;
+  }
+
+  for (const ruolo of DATI.ordine) {
+    const schierati = esito.schierati.filter((g) => g.r === ruolo);
+    const buchi = esito.buchi[ruolo] || 0;
+    if (!schierati.length && !buchi) continue;
+
+    const blocco = elemento(`
+      <div class="reparto-campo">
+        <div class="titolo">${NOMI_RUOLO[ruolo]}</div>
+        <div class="fila"></div>
+      </div>`);
+    const fila = blocco.querySelector('.fila');
+
+    for (const g of schierati) {
+      const maglia = elemento(`
+        <button class="maglia" data-id="${g.id}">
+          <b>${testoSicuro(g.n)}</b>
+          <small>${testoSicuro(g.s)} · resa ${g.y === null || g.y === undefined
+            ? '—' : g.y.toFixed(2)}</small>
+        </button>`);
+      maglia.addEventListener('click', () => apriScheda(g.id));
+      fila.appendChild(maglia);
+    }
+
+    for (let i = 0; i < buchi; i += 1) {
+      fila.appendChild(elemento(
+        '<div class="maglia buco">manca un disponibile</div>'));
+    }
+    campo.appendChild(blocco);
+  }
+
+  if (esito.panchina.length) {
+    const nomi = esito.panchina.slice(0, 8)
+      .map((g) => testoSicuro(g.n)).join(', ');
+    campo.appendChild(elemento(`
+      <div class="reparto-campo">
+        <div class="titolo">in panchina</div>
+        <p style="margin:0;color:var(--ink-medio);font-size:13px">${nomi}</p>
+      </div>`));
+  }
+}
+
+function disegnaModificatore() {
+  const contenitore = document.getElementById('modificatore');
+  contenitore.innerHTML = '';
+  const esito = modificatoreDifesa();
+
+  if (!esito.pronto) {
+    const manca = [];
+    if (esito.mancaPortiere) manca.push('un portiere');
+    if (esito.difensori < 3) manca.push(`${3 - esito.difensori} difensori`);
+    contenitore.appendChild(elemento(`
+      <div class="vuoto">Servono ${manca.join(' e ')} con media voto
+      per calcolare il modificatore.</div>`));
+    return;
+  }
+
+  contenitore.appendChild(elemento(`
+    <div class="griglia q2">
+      <div class="cifra">
+        <div class="valore verde">${esito.media.toFixed(2)}</div>
+        <div class="etichetta">Media voto della difesa</div>
+      </div>
+      <div class="cifra">
+        <div class="valore ambra">${esito.bonus > 0 ? '+' : ''}${esito.bonus}</div>
+        <div class="etichetta">Punti a giornata</div>
+      </div>
+    </div>`));
+
+  const chi = esito.scelti
+    .map((g) => `${testoSicuro(g.n)} (${g.mvp.toFixed(2)})`).join(' · ');
+  contenitore.appendChild(elemento(`
+    <p style="margin:12px 0 0;color:var(--ink-medio);font-size:13px">${chi}</p>`));
+
+  // La scala completa, con lo scaglione in cui ti trovi acceso: cosi' si vede
+  // quanto manca al gradino successivo, che e' l'unica cosa azionabile.
+  const scala = elemento('<div class="scaglioni"></div>');
+  for (const riga of [...DATI.modificatore].reverse()) {
+    const attivo = riga.bonus === esito.bonus;
+    scala.appendChild(elemento(`
+      <div class="scaglione ${attivo ? 'attivo' : ''}">
+        <b>${riga.bonus > 0 ? '+' : ''}${riga.bonus}</b>
+        ${riga.da > 0 ? riga.da.toFixed(2) : 'sotto 6'}
+      </div>`));
+  }
+  contenitore.appendChild(scala);
+
+  contenitore.appendChild(elemento(`
+    <p class="nota" style="margin-top:10px;text-transform:none;letter-spacing:0">
+      Le soglie cambiano da lega a lega: se la tua è diversa, si correggono in
+      core/costanti.py.</p>`));
+}
+
+function disegnaScambio() {
+  const esito = document.getElementById('scambio-esito');
+  esito.innerHTML = '';
+
+  if (!scambioCedi || !scambioRicevi) {
+    esito.appendChild(elemento(
+      '<div class="vuoto">Scegli due giocatori per vedere le differenze.</div>'));
+    return;
+  }
+
+  const confronto = Conti.confrontoScambio(
+    scambioCedi.id, scambioRicevi.id, stato.lega, PER_ID);
+  if (!confronto) return;
+
+  const piatto = (valore, etichetta, decimali = 2, alContrario = false) => {
+    if (valore === null || valore === undefined) {
+      return `<div class="piatto"><div class="n">—</div><div class="e">${etichetta}</div></div>`;
+    }
+    const buono = alContrario ? valore < 0 : valore > 0;
+    const classe = valore === 0 ? '' : (buono ? 'su' : 'giu');
+    const segno = valore > 0 ? '+' : '';
+    return `<div class="piatto">
+      <div class="n ${classe}">${segno}${valore.toFixed(decimali)}</div>
+      <div class="e">${etichetta}</div></div>`;
+  };
+
+  esito.appendChild(elemento(`
+    <p style="margin:14px 0 0;color:var(--ink-medio);font-size:13.5px">
+      Cedi <b>${testoSicuro(confronto.ceduto.n)}</b>,
+      ricevi <b>${testoSicuro(confronto.ricevuto.n)}</b>.
+      ${confronto.stessoRuolo ? '' : 'Ruoli diversi: cambia anche la struttura della rosa.'}
+    </p>`));
+
+  esito.appendChild(elemento(`
+    <div class="bilancia">
+      ${piatto(confronto.resa, 'Resa a partita')}
+      ${piatto(confronto.certezza, 'Certezza', 0)}
+      ${piatto(confronto.prezzo, 'Valore di mercato', 0)}
+    </div>`));
+
+  esito.appendChild(elemento(`
+    <p class="nota" style="margin-top:12px;text-transform:none;letter-spacing:0">
+      Sono differenze, non un verdetto: se lo scambio convenga dipende da quale
+      casella ti serve coprire, e quello lo sai solo tu.</p>`));
+}
+
+function cercaPerScambio(testo, quale) {
+  const contenitore = document.getElementById('scambio-risultati');
+  contenitore.innerHTML = '';
+  const cerca = testo.trim().toLowerCase();
+  if (cerca.length < 2) return;
+
+  const trovati = DATI.giocatori
+    .filter((g) => `${g.n} ${g.nc}`.toLowerCase().includes(cerca))
+    .slice(0, 5);
+
+  for (const g of trovati) {
+    const nodo = elemento(`
+      <button class="riga-gioc">
+        <span class="ruolo ${g.r}">${g.r}</span>
+        <span class="chi">
+          <b>${testoSicuro(g.n)}</b>
+          <small>${testoSicuro(g.s)} · ${prezzo(g)} crediti</small>
+        </span>
+        <span class="cifra-dx">${g.y === null || g.y === undefined
+          ? '—' : g.y.toFixed(2)}<small>resa</small></span>
+      </button>`);
+    nodo.addEventListener('click', () => {
+      if (quale === 'cedi') {
+        scambioCedi = g;
+        document.getElementById('scambio-cedi').value = g.n;
+      } else {
+        scambioRicevi = g;
+        document.getElementById('scambio-ricevi').value = g.n;
+      }
+      contenitore.innerHTML = '';
+      disegnaScambio();
+    });
+    contenitore.appendChild(nodo);
+  }
+}
+
 /* ========================================================= SCHEDA GIOCATORE */
 
 function apriScheda(id) {
@@ -935,6 +1258,17 @@ function collegaEventi() {
   document.getElementById('asta-altri').addEventListener('click', () => registra(false));
   document.getElementById('annulla').addEventListener('click', annulla);
 
+  document.getElementById('scambio-cedi').addEventListener('input', (evento) => {
+    scambioCedi = null;
+    cercaPerScambio(evento.target.value, 'cedi');
+    disegnaScambio();
+  });
+  document.getElementById('scambio-ricevi').addEventListener('input', (evento) => {
+    scambioRicevi = null;
+    cercaPerScambio(evento.target.value, 'ricevi');
+    disegnaScambio();
+  });
+
   document.getElementById('salva-copia').addEventListener('click', salvaCopia);
   document.getElementById('copia-rosa').addEventListener('click', copiaRosa);
   document.getElementById('azzera').addEventListener('click', azzera);
@@ -964,6 +1298,7 @@ function disegnaTutto() {
     if (vista === 'enciclopedia') disegnaEnciclopedia();
     if (vista === 'asta') disegnaAsta();
     if (vista === 'strategia') disegnaStrategia();
+    if (vista === 'allenatore') disegnaAllenatore();
   } catch (errore) {
     // A meta' asta una schermata bianca senza spiegazione e' il peggio che
     // possa capitare: meglio dire cosa e' successo e lasciare l'asta salvata.
