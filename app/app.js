@@ -708,6 +708,21 @@ function disegnaAllarmi() {
 }
 
 function disegnaUndici() {
+  const campoVuoto = document.getElementById('undici');
+  // Il listone puo' essere piu' vecchio dell'app: succede se la GitHub Action
+  // lo rigenera con un core che non conosce ancora i moduli. Meglio dirlo che
+  // morire su un Object.keys di undefined.
+  if (!DATI.moduli) {
+    document.getElementById('scelta-modulo').innerHTML = '';
+    campoVuoto.innerHTML = '';
+    campoVuoto.appendChild(elemento(`
+      <div class="vuoto">Il listone in uso non contiene i moduli.
+      Aggiorna anche core/costanti.py e core/esporta.py, poi rilancia
+      "Aggiorna il listone" da Actions.</div>`));
+    document.getElementById('undici-media').textContent = '—';
+    return;
+  }
+
   // I moduli disponibili arrivano dal JSON: nessuna lista scritta qui dentro.
   const scelte = document.getElementById('scelta-modulo');
   scelte.innerHTML = '';
@@ -779,6 +794,14 @@ function disegnaUndici() {
 function disegnaModificatore() {
   const contenitore = document.getElementById('modificatore');
   contenitore.innerHTML = '';
+
+  if (!DATI.modificatore) {
+    contenitore.appendChild(elemento(`
+      <div class="vuoto">Il listone in uso non contiene la tabella del
+      modificatore. Aggiorna il core e rilancia l'Action.</div>`));
+    return;
+  }
+
   const esito = modificatoreDifesa();
 
   if (!esito.pronto) {

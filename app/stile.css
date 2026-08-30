@@ -906,3 +906,17 @@ h2 { margin: 0; font-size: 16.5px; font-weight: 650; letter-spacing: -0.01em; }
   .voce { font-size: 9.5px; padding: 7px 1px; }
   .bilancia { grid-template-columns: 1fr; }
 }
+
+/* Sul telefono il sottotitolo del pannello non deve finire a destra del
+   titolo: lo schiaccia e lo manda a capo su due righe storte. */
+@media (max-width: 860px) {
+  .intestazione-pannello {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .intestazione-pannello .nota { font-size: 9.5px; }
+
+  .vuoto { padding: 18px 10px; }
+}

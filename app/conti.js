@@ -206,7 +206,8 @@ const Conti = (function () {
    * riempire il buco con qualcuno fuori ruolo.
    */
   function undici(modulo, dati, stato, perId) {
-    const reparti = dati.moduli[modulo];
+    // dati.moduli puo' mancare se il JSON e' stato generato da un core vecchio.
+    const reparti = dati.moduli && dati.moduli[modulo];
     if (!reparti) return null;
 
     const richiesti = { P: 1, D: reparti[0], C: reparti[1], A: reparti[2] };
@@ -258,7 +259,8 @@ const Conti = (function () {
 
     const scelti = [portiere, ...difensori];
     const media = scelti.reduce((somma, g) => somma + g.mvp, 0) / scelti.length;
-    const scaglione = dati.modificatore.find((riga) => media >= riga.da);
+    const tabella = dati.modificatore || [];
+    const scaglione = tabella.find((riga) => media >= riga.da);
 
     return {
       pronto: true,
