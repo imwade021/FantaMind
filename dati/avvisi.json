@@ -1,1 +1,250 @@
-[]
+[
+ {
+  "nome": "G. Artistico",
+  "squadra": "Lazio",
+  "ruolo": "A",
+  "presenze": 31,
+  "gol": 13,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "P. Nuamah",
+  "squadra": "Sassuolo",
+  "ruolo": "A",
+  "presenze": 28,
+  "gol": 13,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "A. Kostić",
+  "squadra": "Milan",
+  "ruolo": "A",
+  "presenze": 35,
+  "gol": 11,
+  "lega": "Super Liga"
+ },
+ {
+  "nome": "M. Farji",
+  "squadra": "Venezia",
+  "ruolo": "A",
+  "presenze": 29,
+  "gol": 9,
+  "lega": "Eliteserien"
+ },
+ {
+  "nome": "L. Banda",
+  "squadra": "Lecce",
+  "ruolo": "A",
+  "presenze": 32,
+  "gol": 5,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "L. Banovec",
+  "squadra": "Como",
+  "ruolo": "C",
+  "presenze": 31,
+  "gol": 3,
+  "lega": "HNL"
+ },
+ {
+  "nome": "E. Ndicka",
+  "squadra": "Roma",
+  "ruolo": "D",
+  "presenze": 31,
+  "gol": 3,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "A. Joujou",
+  "squadra": "Parma",
+  "ruolo": "A",
+  "presenze": 23,
+  "gol": 3,
+  "lega": "Primeira Liga"
+ },
+ {
+  "nome": "W. Cheddira",
+  "squadra": "Napoli",
+  "ruolo": "A",
+  "presenze": 17,
+  "gol": 3,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "M&apos;Bala Nzola",
+  "squadra": "Fiorentina",
+  "ruolo": "A",
+  "presenze": 16,
+  "gol": 3,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "E. Del Prato",
+  "squadra": "Parma",
+  "ruolo": "D",
+  "presenze": 35,
+  "gol": 2,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "K. N’Dri",
+  "squadra": "Lecce",
+  "ruolo": "A",
+  "presenze": 27,
+  "gol": 2,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "K. Baldé",
+  "squadra": "Monza",
+  "ruolo": "A",
+  "presenze": 21,
+  "gol": 2,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "A. Okoro",
+  "squadra": "Venezia",
+  "ruolo": "C",
+  "presenze": 18,
+  "gol": 2,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "Lamine Dabo",
+  "squadra": "Venezia",
+  "ruolo": "C",
+  "presenze": 21,
+  "gol": 1,
+  "lega": "League One"
+ },
+ {
+  "nome": "R. Kouda",
+  "squadra": "Parma",
+  "ruolo": "C",
+  "presenze": 15,
+  "gol": 1,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "C. Ligue",
+  "squadra": "Venezia",
+  "ruolo": "D",
+  "presenze": 15,
+  "gol": 1,
+  "lega": "Schweizer Cup"
+ },
+ {
+  "nome": "M. Dalla Vecchia",
+  "squadra": "Torino",
+  "ruolo": "C",
+  "presenze": 32,
+  "gol": 0,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "N. Obaretin",
+  "squadra": "Napoli",
+  "ruolo": "D",
+  "presenze": 29,
+  "gol": 0,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "A. Ghion",
+  "squadra": "Sassuolo",
+  "ruolo": "C",
+  "presenze": 26,
+  "gol": 0,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "J. Lindstrøm",
+  "squadra": "Napoli",
+  "ruolo": "C",
+  "presenze": 15,
+  "gol": 0,
+  "lega": "Bundesliga"
+ },
+ {
+  "nome": "S. Bocoum",
+  "squadra": "Milan",
+  "ruolo": "D",
+  "presenze": 14,
+  "gol": 0,
+  "lega": "Ligue 2"
+ },
+ {
+  "nome": "S. Goglichidze",
+  "squadra": "Udinese",
+  "ruolo": "D",
+  "presenze": 12,
+  "gol": 0,
+  "lega": "Championship"
+ },
+ {
+  "nome": "N. Galazzi",
+  "squadra": "Monza",
+  "ruolo": "C",
+  "presenze": 11,
+  "gol": 0,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "A. N&apos;Diaye",
+  "squadra": "Parma",
+  "ruolo": "D",
+  "presenze": 11,
+  "gol": 0,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "N. Pierini",
+  "squadra": "Sassuolo",
+  "ruolo": "A",
+  "presenze": 11,
+  "gol": 0,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "E. Bohinen",
+  "squadra": "Venezia",
+  "ruolo": "C",
+  "presenze": 11,
+  "gol": 0,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "S. Wiafe",
+  "squadra": "Genoa",
+  "ruolo": "C",
+  "presenze": 9,
+  "gol": 0,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "F. Israel",
+  "squadra": "Torino",
+  "ruolo": "P",
+  "presenze": 9,
+  "gol": 0,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "S. Lovrić",
+  "squadra": "Udinese",
+  "ruolo": "C",
+  "presenze": 8,
+  "gol": 0,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "N. Cavuoti",
+  "squadra": "Cagliari",
+  "ruolo": "C",
+  "presenze": 7,
+  "gol": 0,
+  "lega": "Serie B"
+ }
+]
