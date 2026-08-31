@@ -17,6 +17,13 @@ const Conti = require(path.join(RADICE, 'app', 'conti.js'));
 
 const DATI = JSON.parse(
   fs.readFileSync(path.join(RADICE, 'app', 'dati_asta.json'), 'utf8'));
+
+// Le liste dei creator sono facoltative: i test che le riguardano si saltano
+// se il file non c'è, esattamente come fa l'app.
+const percorsoStrategie = path.join(RADICE, 'app', 'strategie.json');
+const STRATEGIE = fs.existsSync(percorsoStrategie)
+  ? JSON.parse(fs.readFileSync(percorsoStrategie, 'utf8'))
+  : null;
 const PER_ID = new Map(DATI.giocatori.map((g) => [g.id, g]));
 
 let passati = 0;
@@ -329,6 +336,261 @@ prova('a crediti finiti il massimo è zero, non un numero di comodo', () => {
   compra(stato, 'P', 500);
   assert.strictEqual(Conti.residuo(stato), 0);
   assert.strictEqual(Conti.massimoAdesso('D', DATI, stato, PER_ID), 0);
+});
+
+
+/* ---------------------------------------------------------- ALLENATORE */
+
+/** Riempie una rosa completa con i migliori disponibili per ruolo. */
+function rosaPiena(stato) {
+  for (const ruolo of DATI.ordine) {
+    for (let i = 0; i < DATI.slot[ruolo]; i += 1) {
+      const presi = Conti.occupati(stato);
+      const scelto = DATI.giocatori.find(
+        (g) => g.r === ruolo && !presi.has(g.id) && !(g.out && g.out.grave));
+      stato.rosa.push({ id: scelto.id, prezzo: 10 });
+    }
+  }
+  return stato;
+}
+
+prova('gli allarmi riguardano solo la tua rosa', () => {
+  const stato = statoNuovo();
+  const fermo = DATI.giocatori.find((g) => g.out && g.out.grave);
+  assert.strictEqual(Conti.allarmi(stato, PER_ID).length, 0, 'allarmi a rosa vuota');
+  stato.rosa.push({ id: fermo.id, prezzo: 10 });
+  const trovati = Conti.allarmi(stato, PER_ID);
+  assert.strictEqual(trovati.length, 1);
+  assert.strictEqual(trovati[0].id, fermo.id);
+});
+
+prova("l'undici rispetta il modulo", () => {
+  const stato = rosaPiena(statoNuovo(8, 1500));
+  for (const [modulo, reparti] of Object.entries(DATI.moduli)) {
+    const esito = Conti.undici(modulo, DATI, stato, PER_ID);
+    const conta = (r) => esito.schierati.filter((g) => g.r === r).length;
+    assert.strictEqual(esito.schierati.length, 11, `${modulo}: non sono undici`);
+    assert.strictEqual(conta('P'), 1, `${modulo}: portieri`);
+    assert.strictEqual(conta('D'), reparti[0], `${modulo}: difensori`);
+    assert.strictEqual(conta('C'), reparti[1], `${modulo}: centrocampisti`);
+    assert.strictEqual(conta('A'), reparti[2], `${modulo}: attaccanti`);
+  }
+});
+
+prova("l'undici non schiera chi è fermo", () => {
+  const stato = statoNuovo(8, 1500);
+  const fermo = DATI.giocatori.find((g) => g.out && g.out.grave && g.r === 'A');
+  stato.rosa.push({ id: fermo.id, prezzo: 10 });
+  rosaPiena(stato);
+  const esito = Conti.undici('3-4-3', DATI, stato, PER_ID);
+  assert.ok(!esito.schierati.some((g) => g.id === fermo.id),
+    `${fermo.n} è fermo ma viene schierato`);
+});
+
+prova("con la rosa incompleta l'undici dice quanti ne mancano", () => {
+  const stato = statoNuovo();
+  const esito = Conti.undici('3-4-3', DATI, stato, PER_ID);
+  assert.strictEqual(esito.schierati.length, 0);
+  assert.strictEqual(esito.buchi.D, 3);
+  assert.strictEqual(esito.buchi.A, 3);
+  assert.strictEqual(esito.media, null);
+});
+
+prova('un modulo inesistente non produce un undici finto', () => {
+  const stato = rosaPiena(statoNuovo(8, 1500));
+  assert.strictEqual(Conti.undici('9-9-9', DATI, stato, PER_ID), null);
+});
+
+prova('il modificatore difesa serve portiere più tre difensori', () => {
+  const stato = statoNuovo();
+  let esito = Conti.modificatoreDifesa(DATI, stato, PER_ID);
+  assert.strictEqual(esito.pronto, false);
+  assert.strictEqual(esito.mancaPortiere, true);
+
+  rosaPiena(stato);
+  esito = Conti.modificatoreDifesa(DATI, stato, PER_ID);
+  assert.strictEqual(esito.pronto, true);
+  assert.strictEqual(esito.scelti.length, 4, 'non sono portiere + 3 difensori');
+  assert.strictEqual(esito.scelti.filter((g) => g.r === 'P').length, 1);
+  assert.strictEqual(esito.scelti.filter((g) => g.r === 'D').length, 3);
+});
+
+prova('il bonus del modificatore segue la tabella della lega', () => {
+  const stato = rosaPiena(statoNuovo(8, 1500));
+  const esito = Conti.modificatoreDifesa(DATI, stato, PER_ID);
+  const atteso = DATI.modificatore.find((riga) => esito.media >= riga.da);
+  assert.strictEqual(esito.bonus, atteso.bonus,
+    `media ${esito.media} dovrebbe dare ${atteso.bonus}, dà ${esito.bonus}`);
+  assert.ok(esito.bonus >= 0 && esito.bonus <= 6);
+});
+
+prova('il modificatore usa la media voto, non la fantamedia', () => {
+  const stato = rosaPiena(statoNuovo(8, 1500));
+  const esito = Conti.modificatoreDifesa(DATI, stato, PER_ID);
+  const daMedieVoto = esito.scelti.reduce((s, g) => s + g.mvp, 0) / 4;
+  assert.ok(Math.abs(esito.media - daMedieVoto) < 0.01,
+    'la media non viene dalle medie voto');
+});
+
+prova('lo scambio misura le differenze nella direzione giusta', () => {
+  const stato = statoNuovo();
+  const forte = DATI.giocatori.find((g) => g.r === 'A' && g.y !== null && g.y > 6.5);
+  const debole = DATI.giocatori.filter(
+    (g) => g.r === 'A' && g.y !== null && g.y < 5.8).pop();
+
+  const esito = Conti.confrontoScambio(debole.id, forte.id, stato.lega, PER_ID);
+  assert.ok(esito.resa > 0, 'ricevere il più forte non risulta un guadagno');
+  assert.ok(esito.prezzo > 0, 'il più forte non risulta più caro');
+  assert.strictEqual(esito.stessoRuolo, true);
+
+  const contrario = Conti.confrontoScambio(forte.id, debole.id, stato.lega, PER_ID);
+  assert.ok(Math.abs(contrario.resa + esito.resa) < 0.001,
+    'lo scambio inverso non è simmetrico');
+});
+
+prova('uno scambio con un giocatore inesistente non inventa niente', () => {
+  const stato = statoNuovo();
+  assert.strictEqual(
+    Conti.confrontoScambio(999999, DATI.giocatori[0].id, stato.lega, PER_ID), null);
+});
+
+prova('chi non ha storico non produce differenze finte nello scambio', () => {
+  const stato = statoNuovo();
+  const senza = DATI.giocatori.find((g) => g.y === null);
+  const con = DATI.giocatori.find((g) => g.y !== null);
+  const esito = Conti.confrontoScambio(senza.id, con.id, stato.lega, PER_ID);
+  assert.strictEqual(esito.resa, null, 'confronta una resa che non esiste');
+});
+
+
+/* ------------------------------------------------------------- MERCATO */
+
+prova('senza liste dei creator il mercato non inventa numeri', () => {
+  const stato = statoNuovo();
+  const g = DATI.giocatori[0];
+  assert.strictEqual(Conti.mercato(g, null, stato.lega), null);
+  assert.strictEqual(Conti.divergenza(g, null, stato.lega), null);
+  assert.deepStrictEqual(Conti.affari(DATI, stato, null), []);
+});
+
+prova('il prezzo atteso scala col budget della lega', () => {
+  if (!STRATEGIE) return;
+  const g = DATI.giocatori.find(
+    (x) => Conti.mercato(x, STRATEGIE, { squadre: 8, budget: 500 }));
+  const piccola = Conti.mercato(g, STRATEGIE, { squadre: 8, budget: 500 });
+  const grande = Conti.mercato(g, STRATEGIE, { squadre: 8, budget: 1000 });
+  assert.ok(Math.abs(grande.atteso - piccola.atteso * 2) <= 1,
+    `${g.n}: ${piccola.atteso} a 500 crediti ma ${grande.atteso} a 1000`);
+});
+
+prova('la forbice contiene sempre il valore atteso', () => {
+  if (!STRATEGIE) return;
+  const lega = { squadre: 8, budget: 500 };
+  for (const g of DATI.giocatori) {
+    const m = Conti.mercato(g, STRATEGIE, lega);
+    if (!m || m.min === null || m.max === null) continue;
+    assert.ok(m.min <= m.atteso && m.atteso <= m.max,
+      `${g.n}: atteso ${m.atteso} fuori dalla forbice ${m.min}-${m.max}`);
+  }
+});
+
+prova('ogni prezzo atteso è positivo e plausibile', () => {
+  if (!STRATEGIE) return;
+  const lega = { squadre: 8, budget: 500 };
+  for (const g of DATI.giocatori) {
+    const m = Conti.mercato(g, STRATEGIE, lega);
+    if (!m) continue;
+    assert.ok(m.atteso >= 0, `${g.n}: atteso ${m.atteso}`);
+    assert.ok(m.atteso <= lega.budget,
+      `${g.n}: atteso ${m.atteso}, più dell'intero budget`);
+    assert.ok(m.liste >= 1 && m.liste <= STRATEGIE.fonti.length);
+  }
+});
+
+prova('la divergenza è la distanza fra il mio prezzo e il mercato', () => {
+  if (!STRATEGIE) return;
+  const lega = { squadre: 8, budget: 500 };
+  for (const g of DATI.giocatori.slice(0, 60)) {
+    const m = Conti.mercato(g, STRATEGIE, lega);
+    const d = Conti.divergenza(g, STRATEGIE, lega);
+    if (!m) {
+      assert.strictEqual(d, null);
+      continue;
+    }
+    assert.strictEqual(d, m.atteso - Conti.prezzo(g, lega), `${g.n}`);
+  }
+});
+
+prova('gli affari sono solo giocatori sottovalutati e liberi', () => {
+  if (!STRATEGIE) return;
+  const stato = statoNuovo();
+  const trovati = Conti.affari(DATI, stato, STRATEGIE, 8);
+  assert.ok(trovati.length > 0, 'nessun affare trovato su tutto il listone');
+  for (const { g, delta } of trovati) {
+    assert.ok(delta < 0, `${g.n}: delta ${delta} non è un affare`);
+    assert.ok(g.y !== null, `${g.n}: affare senza resa nota`);
+    assert.ok(!(g.out && g.out.grave), `${g.n}: è fermo`);
+  }
+  const ordinati = trovati.map((x) => x.delta);
+  assert.deepStrictEqual(ordinati, [...ordinati].sort((a, b) => a - b));
+});
+
+prova('un giocatore già venduto non resta fra gli affari', () => {
+  if (!STRATEGIE) return;
+  const stato = statoNuovo();
+  const primo = Conti.affari(DATI, stato, STRATEGIE, 1)[0];
+  stato.venduti.push({ id: primo.g.id, prezzo: 30 });
+  const dopo = Conti.affari(DATI, stato, STRATEGIE, 8);
+  assert.ok(!dopo.some((x) => x.g.id === primo.g.id),
+    `${primo.g.n} è venduto ma resta fra gli affari`);
+});
+
+prova('chi non è in nessuna lista non risulta un affare', () => {
+  if (!STRATEGIE) return;
+  const lega = { squadre: 8, budget: 500 };
+  const senza = DATI.giocatori.filter(
+    (g) => !Conti.mercato(g, STRATEGIE, lega));
+  assert.ok(senza.length > 0, 'tutte le liste coprono tutto il listone');
+  const stato = statoNuovo();
+  const idAffari = new Set(Conti.affari(DATI, stato, STRATEGIE, 50).map((x) => x.g.id));
+  for (const g of senza) {
+    assert.ok(!idAffari.has(g.id), `${g.n}: affare senza dati di mercato`);
+  }
+});
+
+
+prova('i giocatori aggiunti dalle liste sono distinguibili', () => {
+  if (!STRATEGIE || !STRATEGIE.aggiunti) return;
+  // Puo' essere vuoto, ed e' il caso migliore: significa che il Master
+  // contiene gia' tutti i giocatori nominati dalle liste.
+  const visti = new Set();
+  for (const voce of STRATEGIE.aggiunti) {
+    assert.ok(voce.id < 0, `${voce.nome}: id ${voce.id} non è negativo`);
+    assert.ok(!visti.has(voce.id), `id duplicato: ${voce.id}`);
+    visti.add(voce.id);
+    assert.ok(voce.nome && voce.ruolo, 'voce senza nome o ruolo');
+    assert.ok(['P', 'D', 'C', 'A'].includes(voce.ruolo));
+    assert.ok(voce.pma !== null || voce.prezzo_mediano,
+      `${voce.nome}: nessun prezzo, non doveva entrare`);
+  }
+});
+
+prova('gli id aggiunti non collidono con quelli del Master', () => {
+  if (!STRATEGIE || !STRATEGIE.aggiunti) return;
+  const idMaster = new Set(DATI.giocatori.map((g) => g.id));
+  for (const voce of STRATEGIE.aggiunti) {
+    assert.ok(!idMaster.has(voce.id), `${voce.nome}: id già nel Master`);
+  }
+});
+
+prova('chi viene solo dalle liste non ha resa né certezza inventate', () => {
+  if (!STRATEGIE || !STRATEGIE.aggiunti) return;
+  for (const voce of STRATEGIE.aggiunti) {
+    // MV e FM esistono solo se qualcuno ha davvero giocato: lo zero dei file
+    // significa "dato assente", non "rendimento pessimo".
+    if (voce.mv !== null) assert.ok(voce.mv > 0, `${voce.nome}: mv ${voce.mv}`);
+    if (voce.fm !== null) assert.ok(voce.fm > 0, `${voce.nome}: fm ${voce.fm}`);
+  }
 });
 
 /* ------------------------------------------------------------- ESITO */

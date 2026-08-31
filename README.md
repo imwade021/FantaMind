@@ -17,11 +17,13 @@ core/        Le formule. Una sola volta, per tutti.
              certezza, resa, prezzi, fasce, confronti.
 
 pipeline/    Da internet e dagli Excel al listone.
-             build_master.py  -> dati/Lista_Finale_Master.csv
-             genera_json.py   -> app/dati_asta.json
+             build_master.py       -> dati/Lista_Finale_Master.csv
+             genera_json.py        -> app/dati_asta.json
+             importa_strategie.py  -> app/strategie.json
 
 dati/        Le sorgenti: quotazioni, statistiche, anagrafica,
              più il Master che ne esce.
+             strategie/ contiene gli .xlsx dei creator (facoltativi).
 
 app/         L'applicazione. HTML, CSS e JavaScript, niente altro.
              È questa la cartella che va online.
@@ -191,6 +193,45 @@ cd app && python3 -m http.server 8000
 I parametri di lega finiscono dentro `dati_asta.json` e l'app li legge da lì.
 Non esiste una seconda copia in JavaScript: è la cosa che prima faceva dare
 numeri diversi a due schermate.
+
+---
+
+## Le liste dei creator
+
+In `dati/strategie/` puoi mettere gli .xlsx delle guide all'asta scaricate dai
+creator. `importa_strategie.py` le abbina al Master e produce
+`app/strategie.json`; l'app lo carica se c'è, e funziona identica se non c'è.
+
+Il campo che si usa è il **PMA**, cioè il prezzo medio d'asta in percentuale di
+budget: è l'unico confrontabile fra leghe diverse. Il "prezzo" scritto da un
+creator vale sulla lega che aveva in mente lui, la percentuale vale sulla tua.
+
+Restano **separati dal Master**, e la ragione è la regola della casa: il Master
+contiene solo numeri ricalcolabili dal CSV, questi sono giudizi. Servono a
+sapere cosa faranno gli altri al tavolo, non quanto vale un giocatore — e il
+valore sta proprio nella distanza fra i due numeri. Dove il mercato paga più
+del tuo prezzo, lascialo agli altri; dove paga meno, c'è margine. La sezione
+Strategia ha un pannello che elenca i secondi.
+
+Per aggiungerne una: metti il file in `dati/strategie/` e lancia
+`python3 pipeline/importa_strategie.py`. La GitHub Action lo rifà ogni notte,
+perché gli abbinamenti sono per nome e vanno rifatti quando il Master cambia.
+
+---
+
+## Quando esce il listone nuovo
+
+Due file da sostituire in `dati/`, entrambi da fantacalcio.it:
+
+- `Quotazioni_Fantacalcio_Stagione_*.xlsx` — la fonte autorevole di quotazioni
+  e FVM
+- `Lista-FantaAsta-Fantacalcio.csv` — anagrafica, foto e nomi completi
+
+I due si aggiornano con ritmi diversi, e a mercato aperto il CSV arriva prima.
+Per questo `build_master.py` **completa** le quotazioni con i giocatori
+presenti solo nel CSV: un portiere titolare comprato la settimana scorsa
+esiste in asta anche se l'xlsx non lo conosce ancora. L'xlsx resta autorevole
+per chi c'è già; dal CSV si aggiunge soltanto.
 
 ---
 

@@ -295,12 +295,71 @@ const Conti = (function () {
     };
   }
 
+
+  /* ------------------------------------------------- MERCATO ATTESO --- */
+
+  /**
+   * Quanto pagherà la stanza, secondo le liste dei creator.
+   *
+   * Il campo che si usa e' il PMA: il prezzo medio d'asta in PERCENTUALE di
+   * budget. E' l'unico confrontabile fra leghe diverse - il "prezzo" scritto
+   * da un creator vale sulla lega che aveva in mente lui, la percentuale vale
+   * sulla tua. Qui si moltiplica per il tuo budget e basta.
+   *
+   * Torna null se nessuna lista nomina quel giocatore: e' un'informazione
+   * anche quella, e non va confusa con "costa poco".
+   */
+  function mercato(g, strategie, lega) {
+    if (!strategie || !strategie.giocatori) return null;
+    const voce = strategie.giocatori[String(g.id)];
+    if (!voce || !voce.pma) return null;
+
+    const inCrediti = (quota) => (quota === null || quota === undefined
+                                  ? null : Math.round(quota * lega.budget));
+    return {
+      atteso: inCrediti(voce.pma),
+      min: inCrediti(voce.pma_min),
+      max: inCrediti(voce.pma_max),
+      liste: voce.liste,
+      obiettivo: voce.obiettivo,
+      voci: voce.voci || [],
+    };
+  }
+
+  /**
+   * La distanza fra il tuo prezzo e quello che pagherà la stanza.
+   *
+   * Positiva: il mercato paga PIU' di quanto valga secondo i tuoi numeri -
+   * lascialo agli altri, o mettici sopra solo se ti serve davvero.
+   * Negativa: la stanza lo sottovaluta. Li' c'e' l'affare.
+   */
+  function divergenza(g, strategie, lega) {
+    const atteso = mercato(g, strategie, lega);
+    if (!atteso || atteso.atteso === null) return null;
+    return atteso.atteso - prezzo(g, lega);
+  }
+
+  /**
+   * I giocatori che la stanza sottovaluta, fra quelli ancora liberi.
+   * Si guardano solo quelli con una resa nota: un affare su un giocatore
+   * di cui non si sa niente non e' un affare, e' una scommessa.
+   */
+  function affari(dati, stato, strategie, quanti = 8) {
+    return liberi(dati, stato)
+      .filter((g) => g.y !== null && g.y !== undefined && !(g.out && g.out.grave))
+      .map((g) => ({ g, delta: divergenza(g, strategie, stato.lega) }))
+      .filter((x) => x.delta !== null && x.delta < 0)
+      .sort((a, b) => a.delta - b.delta)
+      .slice(0, quanti);
+  }
+
   return {
     chiaveLega, prezzo, fascia, slotTotali,
     speso, residuo, presiPerRuolo, mancanti, caselleScoperte,
     repartoInCorso, disponibilePerReparto, pianoSpesa, massimoAdesso,
     occupati, liberi, candidati,
     rosaCompleta, allarmi, undici, modificatoreDifesa, confrontoScambio,
+    mercato, divergenza, affari,
   };
 })();
 

@@ -74,14 +74,36 @@ class TestCollegamenti(unittest.TestCase):
         """conti.js definisce Conti: se arriva dopo, app.js esplode all'avvio."""
         self.assertLess(PAGINA.index('conti.js'), PAGINA.index('app.js'))
 
+    # Queste due non sono campi del giocatore: si calcolano dalle liste dei
+    # creator, che sono facoltative. Tutte le altre devono stare nel JSON.
+    ORDINI_CALCOLATI = {'mkt', 'div'}
+
     def test_le_colonne_ordinabili_esistono_nei_dati(self):
         percorso = APP / 'dati_asta.json'
         if not percorso.exists():
             self.skipTest('dati_asta.json non generato')
         primo = json.loads(percorso.read_text(encoding='utf-8'))['giocatori'][0]
-        for chiave in LETTORE.ordini:
+        for chiave in LETTORE.ordini - self.ORDINI_CALCOLATI:
             with self.subTest(colonna=chiave):
                 self.assertIn(chiave, primo)
+
+    def test_le_colonne_calcolate_sono_gestite_dal_codice(self):
+        for chiave in LETTORE.ordini & self.ORDINI_CALCOLATI:
+            with self.subTest(colonna=chiave):
+                self.assertIn(f"chiave === '{chiave}'", CODICE,
+                              f"l'ordinamento per {chiave} non è implementato")
+
+    def test_intestazione_e_corpo_hanno_le_stesse_colonne(self):
+        """Una colonna in più nell'intestazione sposta tutti i numeri."""
+        intestazione = re.search(r'<thead>.*?</thead>', PAGINA, re.S).group(0)
+        colonne = len(re.findall(r'<th[\s>]', intestazione))
+        corpo = re.search(r'<tr data-id="\$\{g\.id\}">(.*?)</tr>', CODICE, re.S)
+        self.assertIsNotNone(corpo, 'riga della tabella non trovata')
+        celle = len(re.findall(r'<td', corpo.group(1)))
+        self.assertEqual(colonne, celle,
+                         f'intestazione {colonne} colonne, corpo {celle} celle')
+        self.assertIn(f'colspan="{colonne}"', CODICE,
+                      'il colspan della riga finale non combacia')
 
 
 class TestOffline(unittest.TestCase):
@@ -117,6 +139,67 @@ class TestOffline(unittest.TestCase):
     def test_la_pagina_non_carica_niente_da_internet(self):
         remoti = re.findall(r'(?:src|href)="(https?://[^"]+)"', PAGINA)
         self.assertFalse(remoti, f'la pagina dipende dalla rete: {remoti}')
+
+
+
+class TestCostruzioneNodi(unittest.TestCase):
+    """Regressione: le righe di tabella non si costruiscono dentro un div."""
+
+    def test_gli_elementi_nascono_da_un_template(self):
+        # Il parser HTML scarta <tr> e <td> fuori da una <table>: dentro un
+        # div le righe perdevano le colonne e appendChild riceveva null.
+        self.assertIn("createElement('template')", CODICE)
+        self.assertIn('modello.content.firstElementChild', CODICE)
+
+    def test_la_funzione_elemento_non_usa_un_div(self):
+        blocco = re.search(r'function elemento\(html\) \{(.*?)\n\}', CODICE, re.S)
+        self.assertIsNotNone(blocco, 'funzione elemento() non trovata')
+        self.assertNotIn("createElement('div')", blocco.group(1))
+
+    def test_html_senza_elementi_da_un_errore_leggibile(self):
+        self.assertIn('HTML senza elementi', CODICE)
+
+
+
+class TestSezioniNuove(unittest.TestCase):
+    """Control Center e Allenatore: le parti aggiunte dopo il primo giro."""
+
+    def test_ci_sono_cinque_sezioni(self):
+        self.assertEqual(len(LETTORE.viste), 5, f'sezioni: {sorted(LETTORE.viste)}')
+        for nome in ('control', 'enciclopedia', 'asta', 'strategia', 'allenatore'):
+            with self.subTest(sezione=nome):
+                self.assertIn(nome, LETTORE.viste)
+
+    def test_ogni_voce_ha_etichetta_lunga_e_corta(self):
+        """Cinque voci nella barra del telefono ci stanno solo abbreviate."""
+        self.assertEqual(PAGINA.count('class="lungo"'), 5)
+        self.assertEqual(PAGINA.count('class="breve"'), 5)
+
+    def test_ogni_sezione_viene_disegnata(self):
+        for nome in LETTORE.viste:
+            with self.subTest(sezione=nome):
+                self.assertIn(f"vista === '{nome}'", CODICE,
+                              f'la sezione {nome} non viene mai disegnata')
+
+    def test_moduli_e_modificatore_arrivano_dal_json(self):
+        """Non devono esserci moduli o soglie scritti nel JavaScript."""
+        self.assertIn('DATI.moduli', CODICE)
+        self.assertIn('DATI.modificatore', CODICE)
+        self.assertNotIn("'3-4-3':", CODICE)
+        self.assertNotIn('6.75', CODICE)
+
+    def test_il_json_contiene_moduli_e_modificatore(self):
+        percorso = APP / 'dati_asta.json'
+        if not percorso.exists():
+            self.skipTest('dati_asta.json non generato')
+        dati = json.loads(percorso.read_text(encoding='utf-8'))
+        self.assertIn('moduli', dati)
+        self.assertIn('modificatore', dati)
+        for nome, reparti in dati['moduli'].items():
+            with self.subTest(modulo=nome):
+                self.assertEqual(sum(reparti), 10, f'{nome} non fa dieci di movimento')
+        bonus = [riga['bonus'] for riga in dati['modificatore']]
+        self.assertEqual(bonus, sorted(bonus, reverse=True))
 
 
 class TestManifest(unittest.TestCase):

@@ -17,6 +17,7 @@ const CHIAVE_SALVATAGGIO = 'fantamind:asta:v1';
 const NOMI_RUOLO = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
 
 let DATI = null;                 // il contenuto di dati_asta.json
+let STRATEGIE = null;            // le liste dei creator, se presenti (facoltative)
 let PER_ID = new Map();          // id -> giocatore, per non filtrare ogni volta
 let vista = 'control';
 
@@ -60,6 +61,76 @@ function ricorda() {
   if (stato.storia.length > 10) stato.storia.shift();
 }
 
+
+/**
+ * Mette in lista i giocatori che le liste hanno e il Master no.
+ *
+ * Sono quasi tutti arrivi dall'estero: nessuno storico in Serie A, quindi
+ * niente resa, niente certezza, niente fascia. Ma qualcuno e' titolare vero -
+ * un portiere di una big vale quaranta crediti - e all'asta non poterlo
+ * nemmeno cercare e' peggio che averlo con dati incompleti.
+ *
+ * Restano riconoscibili: id negativo, campo soloListe, e ovunque compaiano
+ * e' scritto da dove vengono.
+ */
+function innestaAggiunti() {
+  if (!STRATEGIE || !Array.isArray(STRATEGIE.aggiunti)) return;
+
+  for (const voce of STRATEGIE.aggiunti) {
+    // Il prezzo per ogni lega esce dal PMA, che e' una percentuale di budget:
+    // stessa formula per tutte le leghe selezionabili.
+    const prezzi = {};
+    for (const squadre of DATI.leghe.squadre) {
+      for (const budget of DATI.leghe.budget) {
+        prezzi[squadre + 'x' + budget] =
+          Math.max(1, Math.round((voce.pma || 0) * budget));
+      }
+    }
+
+    const g = {
+      id: voce.id,
+      n: voce.nome,
+      nc: voce.nome,
+      r: voce.ruolo,
+      s: voce.squadra,
+      pos: 'nuovo arrivo, senza storico in Serie A',
+      bn: false,
+      eta: null, naz: null, foto: null,
+      p: prezzi[DATI.squadre + 'x' + DATI.budget],
+      pz: prezzi,
+      q: voce.quotazione,
+      fvm: null,
+      f: null, fs: {},
+      c: null,
+      nc_perche: ["Non è nel listone ufficiale su cui è costruito il Master: "
+                  + 'quello che si sa arriva dalle liste dei creator.'],
+      out: null,
+      y: null,
+      pv: voce.presenze || 0,
+      mv: voce.mv, fm: voce.fm, mvp: voce.mv,
+      g: voce.gol || 0, a: voce.assist || 0,
+      rc: 0, rp: 0, rs: 0, rx: 0, gs: null, ml: null,
+      v: null, vm: null, vc: null, pari: null,
+      perc: null, rig: null,
+      soloListe: true,
+    };
+
+    DATI.giocatori.push(g);
+    PER_ID.set(g.id, g);
+    STRATEGIE.giocatori[String(g.id)] = {
+      liste: voce.liste,
+      pma: voce.pma,
+      pma_min: voce.pma_min,
+      pma_max: voce.pma_max,
+      prezzo_mediano: voce.prezzo_mediano,
+      obiettivo: voce.obiettivo,
+      voci: voce.voci,
+    };
+  }
+
+  DATI.giocatori.sort((a, b) => b.p - a.p);
+}
+
 /* ============================================================ CONTI D'ASTA */
 /* La matematica dell'asta vive in conti.js: qui ci sono solo le scorciatoie
    che gli passano DATI, stato e l'indice per id. */
@@ -85,6 +156,9 @@ const rosaCompleta = () => Conti.rosaCompleta(stato, PER_ID);
 const allarmi = () => Conti.allarmi(stato, PER_ID);
 const undici = (modulo) => Conti.undici(modulo, DATI, stato, PER_ID);
 const modificatoreDifesa = () => Conti.modificatoreDifesa(DATI, stato, PER_ID);
+const mercato = (g) => Conti.mercato(g, STRATEGIE, stato.lega);
+const divergenza = (g) => Conti.divergenza(g, STRATEGIE, stato.lega);
+const affari = (quanti) => Conti.affari(DATI, stato, STRATEGIE, quanti);
 
 /* ============================================================= FORMATTAZIONE */
 
@@ -131,6 +205,7 @@ function inizialiDi(id) {
 window.inizialiDi = inizialiDi;
 
 function statoBreve(g) {
+  if (g.soloListe) return '<span class="stato ignoto">solo dalle liste</span>';
   if (g.out) {
     const classe = g.out.grave ? 'ko' : 'ignoto';
     return `<span class="stato ${classe}">${testoSicuro(g.out.motivo)}</span>`;
@@ -318,9 +393,18 @@ function filtrati() {
   });
 
   const chiave = filtri.ordine;
+  const valore = (g) => {
+    if (chiave === 'p') return prezzo(g);
+    if (chiave === 'mkt') {
+      const m = mercato(g);
+      return m ? m.atteso : null;
+    }
+    if (chiave === 'div') return divergenza(g);
+    return g[chiave];
+  };
   elenco.sort((a, b) => {
-    const valoreA = chiave === 'p' ? prezzo(a) : a[chiave];
-    const valoreB = chiave === 'p' ? prezzo(b) : b[chiave];
+    const valoreA = valore(a);
+    const valoreB = valore(b);
     // Chi non ha il dato va in fondo, sempre: mescolarlo coi bassi
     // farebbe sembrare scarso chi semplicemente non ha numeri.
     if (valoreA === null || valoreA === undefined) return 1;
@@ -355,11 +439,18 @@ function disegnaEnciclopedia() {
         </td>
         <td class="no-mobile"><span class="ruolo ${g.r}">${g.r}</span></td>
         <td><b>${prezzo(g)}</b></td>
+        <td>${(() => {
+          const m = mercato(g);
+          if (!m || m.atteso === null) return '—';
+          const scarto = m.atteso - prezzo(g);
+          const colore = scarto < 0 ? 'var(--verde)' : 'var(--ink-medio)';
+          return `<span style="color:${colore}">${m.atteso}</span>`;
+        })()}</td>
         <td>${g.y === null || g.y === undefined ? '—' : g.y.toFixed(2)}</td>
         <td class="no-mobile">${g.c === null || g.c === undefined ? '—' : g.c}</td>
         <td class="no-mobile">${g.v === null || g.v === undefined
           ? '—' : (g.v > 0 ? '+' : '') + g.v.toFixed(2)}</td>
-        <td class="no-mobile">F${fascia(g)}</td>
+        <td class="no-mobile">${fascia(g) ? 'F' + fascia(g) : '—'}</td>
         <td>${statoBreve(g)}</td>
       </tr>`);
     riga.addEventListener('click', () => apriScheda(g.id));
@@ -370,7 +461,7 @@ function disegnaEnciclopedia() {
   if (elenco.length > mostrati.length) {
     const avanzo = elenco.length - mostrati.length;
     corpo.appendChild(elemento(`
-      <tr><td colspan="8" style="text-align:center;color:var(--ink-basso)">
+      <tr><td colspan="9" style="text-align:center;color:var(--ink-basso)">
         Altri ${avanzo} non mostrati. Restringi la ricerca.
       </td></tr>`));
   }
@@ -474,7 +565,8 @@ function cercaPerAsta(testo) {
         <span class="ruolo ${g.r}">${g.r}</span>
         <span class="chi">
           <b>${testoSicuro(g.n)}</b>
-          <small>${testoSicuro(g.s)} · fascia ${fascia(g)} · ${testoSicuro(g.pos)}</small>
+          <small>${testoSicuro(g.s)} · ${fascia(g) ? 'fascia ' + fascia(g)
+            : 'dalle liste'} · ${testoSicuro(g.pos)}</small>
         </span>
         <span class="cifra-dx">${prezzo(g)}<small>consigliato</small></span>
       </button>`);
@@ -494,9 +586,12 @@ function scegliPerAsta(g) {
 
   const ruolo = repartoInCorso();
   const tetto = ruolo === g.r ? massimoAdesso(g.r) : null;
+  const atteso = mercato(g);
+  const inCoda = atteso && atteso.atteso !== null
+    ? ` · la stanza paga ~${atteso.atteso}` : '';
   document.getElementById('asta-suggerito').textContent = tetto
-    ? `${g.n}: consigliato ${prezzo(g)}, il tuo tetto adesso è ${tetto}`
-    : `${g.n}: consigliato ${prezzo(g)} crediti`;
+    ? `${g.n}: vale ${prezzo(g)}, il tuo tetto è ${tetto}${inCoda}`
+    : `${g.n}: vale ${prezzo(g)} crediti${inCoda}`;
 }
 
 function registra(mio) {
@@ -585,6 +680,30 @@ function disegnaStrategia() {
         rigaGiocatore(g, g.y.toFixed(2), 'resa')));
     }
     target.appendChild(colonna);
+  }
+
+  // --- dove la stanza sottovaluta: l'unico vero vantaggio che hai ---
+  const elencoAffari = document.getElementById('affari');
+  const notaAffari = document.getElementById('affari-nota');
+  elencoAffari.innerHTML = '';
+
+  if (!STRATEGIE) {
+    notaAffari.textContent = 'liste dei creator non caricate';
+    elencoAffari.appendChild(elemento(`
+      <div class="vuoto">Metti strategie.json in app/ per confrontare i tuoi
+      prezzi con quelli che pagherà la stanza.</div>`));
+  } else {
+    const trovati = affari(8);
+    notaAffari.textContent = `${STRATEGIE.fonti.length} liste a confronto`;
+    if (!trovati.length) {
+      elencoAffari.appendChild(elemento(
+        '<div class="vuoto">Nessun giocatore libero è sottovalutato dal mercato.</div>'));
+    } else {
+      for (const { g, delta } of trovati) {
+        elencoAffari.appendChild(rigaGiocatore(
+          g, `${delta}`, `paghi ${prezzo(g)}`));
+      }
+    }
   }
 
   // --- le fasce della lega scelta ---
@@ -960,7 +1079,7 @@ function apriScheda(id) {
 
     <div class="dati-scheda">
       ${dato(prezzo(g), 'Prezzo')}
-      ${dato('F' + fascia(g), 'Fascia')}
+      ${dato(fascia(g) ? 'F' + fascia(g) : '—', 'Fascia')}
       ${dato(g.y === null || g.y === undefined ? '—' : g.y.toFixed(2), 'Resa')}
       ${dato(g.c === null || g.c === undefined ? '—' : g.c, 'Certezza')}
       ${dato(g.pv, 'Presenze')}
@@ -968,6 +1087,15 @@ function apriScheda(id) {
         ? dato(g.gs === null || g.gs === undefined ? '—' : g.gs.toFixed(2), 'Gol subiti/gara')
         : dato(g.g + ' / ' + g.a, 'Gol / assist')}
     </div>`;
+
+  if (g.soloListe) {
+    html += `
+      <div class="avviso lieve">
+        <b>Non è nel listone ufficiale</b> su cui è costruito il tuo Master:
+        di lui sappiamo solo quello che dicono i creator. Niente resa, niente
+        certezza, niente fascia — e nemmeno gli altri al tavolo ne sanno di più.
+      </div>`;
+  }
 
   if (g.out) {
     html += `
@@ -1028,6 +1156,65 @@ function apriScheda(id) {
       </div>`;
   }
 
+  // --- cosa dicono le liste dei creator, se ci sono ---
+  const dato_mercato = mercato(g);
+  if (dato_mercato && dato_mercato.atteso !== null) {
+    const scarto = dato_mercato.atteso - prezzo(g);
+    const forbice = (dato_mercato.min !== null && dato_mercato.max !== null
+                     && dato_mercato.min !== dato_mercato.max)
+      ? ` La forbice fra le liste va da ${dato_mercato.min} a ${dato_mercato.max}.` : '';
+
+    let lettura;
+    if (scarto > 3) {
+      lettura = `La stanza lo paga <b>${scarto} crediti in più</b> di quanto valga
+        secondo i tuoi numeri: lascialo agli altri, a meno che non ti serva
+        proprio lui.`;
+    } else if (scarto < -3) {
+      lettura = `La stanza lo sottovaluta di <b>${Math.abs(scarto)} crediti</b>
+        rispetto ai tuoi numeri. Qui c'è margine.`;
+    } else {
+      lettura = 'Il tuo prezzo e quello di mercato dicono la stessa cosa.';
+    }
+
+    const obiettivo = dato_mercato.obiettivo
+      ? ` <b>${dato_mercato.obiettivo}</b> ${dato_mercato.obiettivo === 1
+          ? 'lista lo segna' : 'liste lo segnano'} come obiettivo.` : '';
+
+    const fasce = [...new Set(dato_mercato.voci
+      .map((v) => v.fascia).filter(Boolean))].slice(0, 4);
+
+    const note = [...new Set(dato_mercato.voci
+      .flatMap((v) => v.note || []))].slice(0, 6);
+
+    html += `
+      <div class="blocco">
+        <h3>Quanto pagherà la stanza</h3>
+        <div class="dati-scheda" style="margin:0 0 12px">
+          ${dato(prezzo(g), 'Il tuo prezzo')}
+          ${dato(dato_mercato.atteso, 'Atteso in asta')}
+          ${dato((scarto > 0 ? '+' : '') + scarto, 'Differenza')}
+        </div>
+        <p>${lettura}${forbice}${obiettivo}</p>
+        ${fasce.length ? `<div class="pillole">${fasce
+          .map((f) => `<span class="pillola">${testoSicuro(f)}</span>`).join('')}</div>` : ''}
+        ${note.length ? `<div class="pillole" style="margin-top:7px">${note
+          .map((n) => `<span class="pillola">${testoSicuro(n)}</span>`).join('')}</div>` : ''}
+        <p class="nota" style="margin-top:10px;text-transform:none;letter-spacing:0">
+          Da ${dato_mercato.liste} ${dato_mercato.liste === 1 ? 'lista' : 'liste'}
+          di creator. Sono opinioni, non numeri verificabili: servono a sapere
+          cosa faranno gli altri, non quanto vale davvero.</p>
+      </div>`;
+
+    const commenti = dato_mercato.voci.filter((v) => v.commento).slice(0, 2);
+    for (const voce of commenti) {
+      html += `
+        <div class="blocco">
+          <h3>${testoSicuro(voce.fonte)}</h3>
+          <p>${testoSicuro(voce.commento)}</p>
+        </div>`;
+    }
+  }
+
   // Il consiglio d'asta non e' un'opinione: e' il tuo tetto, spiegato.
   html += `
     <div class="blocco">
@@ -1072,8 +1259,16 @@ function consiglioAsta(g, tetto, inRosa, daAltri) {
       con ${residuo()} crediti e ${caselleScoperte()} caselle da riempire,
       spenderne di più significa toglierli a un'altra casella.`;
   }
+  const atteso = mercato(g);
+  if (atteso && atteso.atteso !== null && atteso.atteso > tetto) {
+    return `Vale ${suo} crediti e il tuo tetto è ${tetto}, ma la stanza lo pagherà
+      intorno a ${atteso.atteso}: con questo budget non lo prendi, a meno di
+      togliere crediti a un'altra casella.`;
+  }
+  const riferimento = atteso && atteso.atteso !== null
+    ? atteso.atteso : Math.round(suo * 1.15);
   return `Vale ${suo} crediti e ci stai: il tuo tetto per questa casella è ${tetto}.
-    Sopra ${Math.round(suo * 1.15)} stai pagando la concorrenza, non il giocatore.`;
+    Sopra ${riferimento} stai pagando la concorrenza, non il giocatore.`;
 }
 
 function azioneScheda(azione, g) {
@@ -1348,6 +1543,18 @@ async function avvia() {
   }
 
   PER_ID = new Map(DATI.giocatori.map((g) => [g.id, g]));
+
+  // Le liste dei creator sono FACOLTATIVE: se il file non c'e', l'app
+  // funziona esattamente come prima. Nessuna schermata dipende da loro.
+  try {
+    const riposta = await fetch('strategie.json', { cache: 'no-cache' });
+    if (riposta.ok) {
+      STRATEGIE = await riposta.json();
+      innestaAggiunti();
+    }
+  } catch (errore) {
+    console.info('Nessuna lista dei creator caricata:', errore.message);
+  }
 
   ripristina();
   // Una lega salvata che non esiste piu' nel listone manderebbe prezzo() in

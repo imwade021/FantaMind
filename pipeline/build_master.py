@@ -192,6 +192,71 @@ def carica_quotazioni(percorso=None):
     return quote
 
 
+
+def completa_quotazioni(quote, percorso="Lista-FantaAsta-Fantacalcio.csv"):
+    """
+    Aggiunge i giocatori presenti nell'anagrafica ma non nelle quotazioni.
+
+    L'xlsx delle quotazioni resta la fonte autorevole per chi c'e' gia': qui
+    si AGGIUNGE soltanto, non si sovrascrive niente. Serve perche' i due file
+    si aggiornano con ritmi diversi, e a mercato aperto il CSV arriva prima:
+    un portiere titolare comprato la settimana scorsa e' nel CSV e non ancora
+    nell'xlsx. All'asta un giocatore che non puoi nemmeno cercare e' peggio di
+    uno con dati incompleti.
+
+    Le colonne del CSV sono per posizione, senza intestazione:
+    0 Id · 1 Nome · 2 Nome completo · 3 R · 4 Ruolo esteso · 5 Qt.A · 6 Qt.I
+    7 Qt.A M · 8 Qt.I M · 9 Squadra · 10 FVM · 11 FVM M
+    """
+    if not os.path.exists(percorso):
+        return quote
+
+    try:
+        df = pd.read_csv(percorso, header=None, dtype=str,
+                         encoding='utf-8-sig', on_bad_lines='skip')
+    except Exception as e:
+        print(f"⚠️ {percorso} illeggibile per il completamento: {e}")
+        return quote
+
+    if df.shape[1] < 12:
+        print(f"⚠️ {percorso}: colonne insufficienti, completamento saltato.")
+        return quote
+
+    def num(valore):
+        try:
+            return float(str(valore).replace(',', '.'))
+        except (TypeError, ValueError):
+            return None
+
+    aggiunti = []
+    for _, row in df.iterrows():
+        identificativo = clean_id(row[0])
+        if not identificativo or identificativo in quote:
+            continue
+        ruolo = str(row[3]).strip().upper()
+        if ruolo not in ('P', 'D', 'C', 'A'):
+            continue
+        quote[identificativo] = {
+            'Nome': row[1],
+            'R': ruolo,
+            'RM': row[4],
+            'Squadra': row[9],
+            'Qt.A': num(row[5]),
+            'Qt.I': num(row[6]),
+            'Qt.M': num(row[7]),
+            'Diff.M': None,
+            'FVM': num(row[10]),
+            'FVM.M': num(row[11]),
+        }
+        aggiunti.append(str(row[1]))
+
+    if aggiunti:
+        print(f"➕ {len(aggiunti)} giocatori presi dall'anagrafica perche' "
+              f"non ancora nelle quotazioni: {', '.join(aggiunti[:6])}"
+              f"{'…' if len(aggiunti) > 6 else ''}")
+    return quote
+
+
 def carica_anagrafica(percorso="Lista-FantaAsta-Fantacalcio.csv"):
     """CSV senza intestazione: serve solo per foto, piede, nazionalita',
     data di nascita e NOME COMPLETO (prezioso per agganciare l'API)."""
@@ -690,6 +755,9 @@ def main():
 
     stats_per_id, stats_per_nome = carica_statistiche()
     quotazioni = carica_quotazioni()
+    # Il CSV dell'anagrafica si aggiorna prima dell'xlsx: da li' arrivano i
+    # giocatori comprati di recente, che altrimenti non esisterebbero in asta.
+    quotazioni = completa_quotazioni(quotazioni)
     if not quotazioni:
         errore("Senza quotazioni non si costruisce nulla.")
         return 1

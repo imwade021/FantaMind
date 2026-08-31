@@ -8,7 +8,7 @@
    mai quando non puo'.
    ------------------------------------------------------------------ */
 
-const VERSIONE = 'fantamind-v4';
+const VERSIONE = 'fantamind-v7';
 
 const GUSCIO = [
   './',
@@ -16,6 +16,7 @@ const GUSCIO = [
   'stile.css',
   'conti.js',
   'app.js',
+  'strategie.json',
   'manifest.webmanifest',
   'icona-180.png',
   'icona-192.png',

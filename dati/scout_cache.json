@@ -1,54 +1,5 @@
 {
- "infortuni": {
-  "118956": {
-   "dal": "2026-08-31",
-   "motivo": "Inactive"
-  },
-  "137976": {
-   "dal": "2026-08-31",
-   "motivo": "Muscle Injury"
-  },
-  "162452": {
-   "dal": "2026-08-31",
-   "motivo": "Muscle Injury"
-  },
-  "199837": {
-   "dal": "2026-08-31",
-   "motivo": "Knee Injury"
-  },
-  "281495": {
-   "dal": "2026-08-31",
-   "motivo": "Ankle Injury"
-  },
-  "31099": {
-   "dal": "2026-08-31",
-   "motivo": "Muscle Injury"
-  },
-  "31543": {
-   "dal": "2026-08-31",
-   "motivo": "Injury"
-  },
-  "319919": {
-   "dal": "2026-08-31",
-   "motivo": "Thigh Injury"
-  },
-  "353609": {
-   "dal": "2026-08-31",
-   "motivo": "Knee Injury"
-  },
-  "453906": {
-   "dal": "2026-08-31",
-   "motivo": "Muscle Injury"
-  },
-  "626686": {
-   "dal": "2026-08-31",
-   "motivo": "Knee Injury"
-  },
-  "782": {
-   "dal": "2026-08-31",
-   "motivo": "Thigh Injury"
-  }
- },
+ "infortuni": {},
  "infortuni_stagione_2025": {
   "10077": {
    "gare_altro": 0,
@@ -2372,7 +2323,6 @@
    "presenze_totali": 18,
    "squadre_stagione": 2
   },
-  "2025:a durmisi": "vuoto",
   "2025:a furlanetto": {
    "assist": 0,
    "campionati": [
@@ -3347,21 +3297,6 @@
    "presenze_totali": 17,
    "squadre_stagione": 1
   },
-  "2025:b badiashile": {
-   "assist": 0,
-   "campionati": [
-    "FA Cup",
-    "League Cup",
-    "Premier League"
-   ],
-   "da_titolare": 9,
-   "gol": 0,
-   "lega": "Premier League",
-   "minuti": 808,
-   "presenze": 8,
-   "presenze_totali": 12,
-   "squadre_stagione": 1
-  },
   "2025:b bogdanovic": "vuoto",
   "2025:b galassi": "vuoto",
   "2025:bartol franjic": {
@@ -3564,23 +3499,6 @@
    "squadre_stagione": 1
   },
   "2025:c garofalo": "vuoto",
-  "2025:c jones": {
-   "assist": 2,
-   "campionati": [
-    "Community Shield",
-    "FA Cup",
-    "League Cup",
-    "Premier League"
-   ],
-   "da_titolare": 24,
-   "gol": 1,
-   "lega": "Premier League",
-   "minuti": 2448,
-   "presenze": 34,
-   "presenze_totali": 40,
-   "squadre_stagione": 1
-  },
-  "2025:c lupo": "vuoto",
   "2025:c odenthal": {
    "assist": 0,
    "campionati": [
@@ -3814,7 +3732,6 @@
    "presenze_totali": 3,
    "squadre_stagione": 1
   },
-  "2025:d okolo": "vuoto",
   "2025:d resetar": "vuoto",
   "2025:daniel boloca": "vuoto",
   "2025:daniel maldini": {
@@ -4169,21 +4086,6 @@
    "minuti": 3178,
    "presenze": 35,
    "presenze_totali": 38,
-   "squadre_stagione": 1
-  },
-  "2025:e elmas": {
-   "assist": 3,
-   "campionati": [
-    "Coppa Italia",
-    "Serie A",
-    "Super Cup"
-   ],
-   "da_titolare": 24,
-   "gol": 1,
-   "lega": "Serie A",
-   "minuti": 2113,
-   "presenze": 33,
-   "presenze_totali": 37,
    "squadre_stagione": 1
   },
   "2025:e kospo": {
@@ -4845,24 +4747,9 @@
   },
   "2025:g astaldi": "vuoto",
   "2025:g bertolini": "vuoto",
-  "2025:g kulla": "vuoto",
   "2025:g puzzoli": "vuoto",
   "2025:g stojak": "vuoto",
   "2025:g vezzosi": "vuoto",
-  "2025:g vicario": {
-   "assist": 0,
-   "campionati": [
-    "FA Cup",
-    "Premier League"
-   ],
-   "da_titolare": 32,
-   "gol": 0,
-   "lega": "Premier League",
-   "minuti": 2880,
-   "presenze": 31,
-   "presenze_totali": 32,
-   "squadre_stagione": 1
-  },
   "2025:gabriele bracaglia": {
    "assist": 1,
    "campionati": [
@@ -5496,7 +5383,6 @@
    "squadre_stagione": 1
   },
   "2025:ivan smolcic": "vuoto",
-  "2025:j iddrissou": "vuoto",
   "2025:j idele": "vuoto",
   "2025:j lindstrom": {
    "assist": 0,
@@ -6013,33 +5899,6 @@
    "presenze_totali": 5,
    "squadre_stagione": 1
   },
-  "2025:k grabara": {
-   "assist": 0,
-   "campionati": [
-    "Bundesliga"
-   ],
-   "da_titolare": 36,
-   "gol": 0,
-   "lega": "Bundesliga",
-   "minuti": 3270,
-   "presenze": 36,
-   "presenze_totali": 36,
-   "squadre_stagione": 1
-  },
-  "2025:k ndri": {
-   "assist": 0,
-   "campionati": [
-    "Coppa Italia",
-    "Serie A"
-   ],
-   "da_titolare": 2,
-   "gol": 2,
-   "lega": "Serie A",
-   "minuti": 567,
-   "presenze": 27,
-   "presenze_totali": 28,
-   "squadre_stagione": 1
-  },
   "2025:kaiki bruno da silva": "vuoto",
   "2025:kamaldeen sulemana": {
    "assist": 1,
@@ -6325,7 +6184,6 @@
    "presenze_totali": 31,
    "squadre_stagione": 1
   },
-  "2025:l bovio": "vuoto",
   "2025:l bovo": {
    "assist": 0,
    "campionati": [
@@ -6630,19 +6488,6 @@
    "presenze_totali": 14,
    "squadre_stagione": 2
   },
-  "2025:louis reynaud": {
-   "assist": 0,
-   "campionati": [
-    "Coupe de France"
-   ],
-   "da_titolare": 0,
-   "gol": 0,
-   "lega": "Coupe de France",
-   "minuti": 19,
-   "presenze": 1,
-   "presenze_totali": 1,
-   "squadre_stagione": 1
-  },
   "2025:luca lezzerini": {
    "assist": 0,
    "campionati": [
@@ -6842,7 +6687,6 @@
    "presenze_totali": 1,
    "squadre_stagione": 1
   },
-  "2025:m marello": "vuoto",
   "2025:m mosconi": {
    "assist": 0,
    "campionati": [
@@ -7618,21 +7462,6 @@
    "presenze": 11,
    "presenze_totali": 12,
    "squadre_stagione": 1
-  },
-  "2025:n gonzalez": {
-   "assist": 0,
-   "campionati": [
-    "Copa del Rey",
-    "La Liga",
-    "Serie A"
-   ],
-   "da_titolare": 18,
-   "gol": 5,
-   "lega": "La Liga",
-   "minuti": 1550,
-   "presenze": 24,
-   "presenze_totali": 28,
-   "squadre_stagione": 2
   },
   "2025:n grandu": "vuoto",
   "2025:n kovac": "vuoto",
@@ -8694,21 +8523,6 @@
    "presenze_totali": 27,
    "squadre_stagione": 2
   },
-  "2025:rodrigo mora": {
-   "assist": 1,
-   "campionati": [
-    "Primeira Liga",
-    "Taça da Liga",
-    "Taça de Portugal"
-   ],
-   "da_titolare": 20,
-   "gol": 1,
-   "lega": "Primeira Liga",
-   "minuti": 1190,
-   "presenze": 28,
-   "presenze_totali": 35,
-   "squadre_stagione": 1
-  },
   "2025:rolando mandragora": {
    "assist": 3,
    "campionati": [
@@ -9174,20 +8988,6 @@
    "minuti": 3224,
    "presenze": 34,
    "presenze_totali": 38,
-   "squadre_stagione": 1
-  },
-  "2025:t de martis": {
-   "assist": 0,
-   "campionati": [
-    "Copa Argentina",
-    "Liga Profesional Argentina"
-   ],
-   "da_titolare": 1,
-   "gol": 0,
-   "lega": "Copa Argentina",
-   "minuti": 28,
-   "presenze": 4,
-   "presenze_totali": 5,
    "squadre_stagione": 1
   },
   "2025:t macchioni": {
