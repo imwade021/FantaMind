@@ -61,6 +61,11 @@ jobs:
       - name: Genera il file dell'app
         run: python pipeline/genera_json.py
 
+      - name: Riabbina le liste dei creator
+        # Gli abbinamenti sono per nome: se il Master cambia vanno rifatti.
+        # Se in dati/strategie/ non c'e' niente, lo script lo dice e basta.
+        run: python pipeline/importa_strategie.py || true
+
       - name: Controlla che i numeri tornino
         # Se un test fallisce il commit non parte: online resta il listone di
         # ieri, che è vecchio di un giorno ma giusto.
@@ -73,7 +78,8 @@ jobs:
           git config --global user.name "FantaMind Bot"
           git config --global user.email "action@github.com"
           for f in dati/Lista_Finale_Master.csv dati/scout_cache.json \
-                   dati/avvisi.json dati/avviso.txt app/dati_asta.json; do
+                   dati/avvisi.json dati/avviso.txt app/dati_asta.json \
+                   app/strategie.json; do
             [ -e "$f" ] && git add -A "$f"
           done
           if git diff --staged --quiet; then
