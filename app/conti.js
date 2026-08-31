@@ -121,26 +121,36 @@ const Conti = (function () {
    * giocatori da dieci: te ne serve uno buono e poi dei tappabuchi. Le fasce
    * sono decrescenti, e l'eccedenza degli arrotondamenti va sulla prima.
    */
+  /**
+   * Il budget di un reparto diviso in fasce decrescenti.
+   *
+   * Sta qui, da sola, perche' la usano sia il piano del reparto sia il tetto
+   * sul singolo giocatore: due copie della stessa formula darebbero due
+   * numeri diversi per la stessa domanda.
+   */
+  function fasceDecrescenti(disponibile, caselle, decadimento = 0.55) {
+    if (caselle <= 0) return [];
+    if (disponibile <= caselle) {
+      return Array.from({ length: caselle },
+                        (_, i) => (i < disponibile ? 1 : 0));
+    }
+    const pesi = Array.from({ length: caselle }, (_, i) => decadimento ** i);
+    const somma = pesi.reduce((a, b) => a + b, 0);
+    const fasce = pesi.map((p) => Math.max(1, Math.floor(disponibile * p / somma)));
+    const avanzo = disponibile - fasce.reduce((a, b) => a + b, 0);
+    if (avanzo > 0) fasce[0] += avanzo;
+    return fasce;
+  }
+
   function pianoSpesa(ruolo, dati, stato, perId, decadimento = 0.55) {
     const buchi = mancanti(dati, stato, perId)[ruolo];
     if (!buchi) return [];
 
-    const disponibile = disponibilePerReparto(ruolo, dati, stato, perId);
-
     // Sotto un credito a casella non ci sono scelte da fare: si dice quante
     // caselle riesci ancora a coprire, e le altre restano a zero. E' brutto
     // da vedere, ed e' esattamente l'informazione che serve in quel momento.
-    if (disponibile <= buchi) {
-      return Array.from({ length: buchi }, (_, i) => (i < disponibile ? 1 : 0));
-    }
-
-    const pesi = Array.from({ length: buchi }, (_, i) => decadimento ** i);
-    const sommaPesi = pesi.reduce((a, b) => a + b, 0);
-
-    const fasce = pesi.map((p) => Math.max(1, Math.floor(disponibile * p / sommaPesi)));
-    const avanzo = disponibile - fasce.reduce((a, b) => a + b, 0);
-    if (avanzo > 0) fasce[0] += avanzo;
-    return fasce;
+    const disponibile = disponibilePerReparto(ruolo, dati, stato, perId);
+    return fasceDecrescenti(disponibile, buchi, decadimento);
   }
 
   /** Il massimo che puoi mettere su UNA casella di questo ruolo, adesso. */
@@ -353,13 +363,126 @@ const Conti = (function () {
       .slice(0, quanti);
   }
 
+
+  /* ------------------------------------------------- LISTA DEI DESIDERI - */
+
+  /**
+   * Quanto costerà davvero prendere un giocatore.
+   *
+   * Se le liste dei creator dicono che la stanza lo paga 52, il tuo prezzo di
+   * 23 non e' la cifra da mettere da parte: e' quella che serve per NON
+   * prenderlo. Si riserva il piu' alto dei due.
+   */
+  function costoAtteso(g, strategie, lega) {
+    const m = mercato(g, strategie, lega);
+    const mio = prezzo(g, lega);
+    return m && m.atteso !== null ? Math.max(mio, m.atteso) : mio;
+  }
+
+  function inLista(g, stato) {
+    return (stato.desideri || []).includes(g.id);
+  }
+
+  /** I desiderati ancora liberi. Chi e' gia' andato via non impegna crediti. */
+  function desiderati(dati, stato, perId, soloLiberi = true) {
+    const presi = occupati(stato);
+    return (stato.desideri || [])
+      .map((id) => perId.get(id))
+      .filter(Boolean)
+      .filter((g) => !soloLiberi || !presi.has(g.id));
+  }
+
+  /**
+   * I crediti da tenere da parte per i desiderati di un reparto.
+   * Chi e' fermo non si riserva: quella casella non la riempie.
+   */
+  function riserva(ruolo, dati, stato, perId, strategie) {
+    return desiderati(dati, stato, perId)
+      .filter((g) => g.r === ruolo && !(g.out && g.out.grave))
+      .reduce((somma, g) => somma + costoAtteso(g, strategie, stato.lega), 0);
+  }
+
+  /**
+   * Il massimo che puoi mettere su QUESTO giocatore, adesso.
+   *
+   * Per un desiderato il tetto non e' piu' la casella media del reparto: e'
+   * tutto il reparto meno quello che serve per gli altri desiderati e per le
+   * caselle che restano. Hai deciso che lui lo vuoi, e il piano si adegua.
+   *
+   * Per chiunque altro il tetto SCENDE della riserva: quei crediti sono
+   * gia' promessi. E' il senso della lista - se non togliesse niente a
+   * nessuno, non starebbe cambiando nessuna decisione.
+   */
+  function massimoPer(g, dati, stato, perId, strategie) {
+    const buchi = mancanti(dati, stato, perId);
+    if (!buchi[g.r]) return 0;
+
+    const disponibile = disponibilePerReparto(g.r, dati, stato, perId);
+    const desiderato = inLista(g, stato);
+    const altri = desiderati(dati, stato, perId)
+      .filter((x) => x.r === g.r && x.id !== g.id && !(x.out && x.out.grave));
+    const impegnato = altri.reduce(
+      (somma, x) => somma + costoAtteso(x, strategie, stato.lega), 0);
+
+    if (desiderato) {
+      // Un credito per ogni altra casella del reparto che resterebbe vuota.
+      const casellePoi = Math.max(0, buchi[g.r] - 1 - altri.length);
+      return Math.max(1, Math.floor(disponibile - impegnato - casellePoi));
+    }
+
+    // Per chi non e' in lista: le stesse fasce decrescenti di sempre, ma
+    // calcolate sui crediti che restano dopo la riserva e sulle caselle che
+    // restano dopo i desiderati. Senza lista in memoria il conto e' identico
+    // a quello del piano di reparto - ed e' giusto che lo sia.
+    const caselleLibere = Math.max(1, buchi[g.r] - altri.length);
+    const fasce = fasceDecrescenti(Math.max(0, disponibile - impegnato),
+                                   caselleLibere);
+    return fasce.length ? fasce[0] : 0;
+  }
+
+  /**
+   * La lista sta in piedi con questo budget?
+   *
+   * Somma quello che costeranno i desiderati liberi e lascia un credito per
+   * ogni altra casella. Se sfora, meglio saperlo prima dell'asta che a meta'.
+   */
+  function sostenibilita(dati, stato, perId, strategie) {
+    const lista = desiderati(dati, stato, perId)
+      .filter((g) => !(g.out && g.out.grave));
+    const costo = lista.reduce(
+      (somma, g) => somma + costoAtteso(g, strategie, stato.lega), 0);
+
+    const buchi = mancanti(dati, stato, perId);
+    const scoperte = Object.values(buchi).reduce((a, b) => a + b, 0);
+    const altreCaselle = Math.max(0, scoperte - lista.length);
+    const cassa = residuo(stato);
+
+    return {
+      quanti: lista.length,
+      costo,
+      residuo: cassa,
+      altreCaselle,
+      // Quanto resta per casella dopo aver pagato tutta la lista.
+      perCasella: altreCaselle > 0
+        ? Math.floor((cassa - costo) / altreCaselle) : null,
+      sfora: costo + altreCaselle > cassa,
+      // Piu' desiderati che caselle in un ruolo: non e' un errore, ma
+      // significa che alcuni non li prenderai comunque.
+      troppi: Object.fromEntries(dati.ordine.map((r) => [
+        r, Math.max(0, lista.filter((g) => g.r === r).length - buchi[r]),
+      ]).filter(([, quanti]) => quanti > 0)),
+    };
+  }
+
   return {
     chiaveLega, prezzo, fascia, slotTotali,
     speso, residuo, presiPerRuolo, mancanti, caselleScoperte,
-    repartoInCorso, disponibilePerReparto, pianoSpesa, massimoAdesso,
+    repartoInCorso, disponibilePerReparto, fasceDecrescenti, pianoSpesa,
+    massimoAdesso,
     occupati, liberi, candidati,
     rosaCompleta, allarmi, undici, modificatoreDifesa, confrontoScambio,
     mercato, divergenza, affari,
+    costoAtteso, inLista, desiderati, riserva, massimoPer, sostenibilita,
   };
 })();
 

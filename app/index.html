@@ -306,6 +306,21 @@
       <h1>Strategia d'asta</h1>
       <p class="sottotitolo">Quanto mettere su ogni reparto, e chi guardare.</p>
 
+      <div class="pannello">
+        <div class="intestazione-pannello">
+          <h2>La tua lista</h2>
+          <span class="nota" id="lista-nota">—</span>
+        </div>
+        <div class="riga-filtri">
+          <input class="campo" id="lista-cerca" type="search"
+                 placeholder="Cerca chi vuoi in rosa…" autocomplete="off"
+                 style="flex:1;min-width:180px">
+        </div>
+        <div class="elenco" id="lista-risultati"></div>
+        <div id="lista-sostenibilita"></div>
+        <div id="lista-desideri"></div>
+      </div>
+
       <div class="griglia q4" id="riparto-reparti"></div>
 
       <div class="pannello">

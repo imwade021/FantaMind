@@ -25,6 +25,7 @@ let stato = {
   lega: { squadre: 8, budget: 500 },
   rosa: [],        // { id, prezzo } - i miei
   venduti: [],     // { id, prezzo } - quelli degli altri
+  desideri: [],    // gli id che vuoi in rosa: mettono da parte i crediti
   storia: [],      // per Annulla: copie dello stato precedente
 };
 
@@ -32,8 +33,9 @@ let stato = {
 
 function salva() {
   try {
-    const { lega, rosa, venduti } = stato;
-    localStorage.setItem(CHIAVE_SALVATAGGIO, JSON.stringify({ lega, rosa, venduti }));
+    const { lega, rosa, venduti, desideri } = stato;
+    localStorage.setItem(CHIAVE_SALVATAGGIO,
+                         JSON.stringify({ lega, rosa, venduti, desideri }));
   } catch (errore) {
     // Safari in navigazione privata rifiuta di scrivere. L'asta continua
     // in memoria: meglio senza salvataggio che con l'app bloccata.
@@ -49,6 +51,7 @@ function ripristina() {
     if (letto.lega) stato.lega = letto.lega;
     if (Array.isArray(letto.rosa)) stato.rosa = letto.rosa;
     if (Array.isArray(letto.venduti)) stato.venduti = letto.venduti;
+    if (Array.isArray(letto.desideri)) stato.desideri = letto.desideri;
   } catch (errore) {
     console.warn('Salvataggio illeggibile, si riparte puliti:', errore);
   }
@@ -57,7 +60,8 @@ function ripristina() {
 function ricorda() {
   // Dieci passi indietro bastano: piu' in la' non ci si ricorda comunque
   // che cosa si stava facendo.
-  stato.storia.push(JSON.stringify({ rosa: stato.rosa, venduti: stato.venduti }));
+  stato.storia.push(JSON.stringify({
+    rosa: stato.rosa, venduti: stato.venduti, desideri: stato.desideri }));
   if (stato.storia.length > 10) stato.storia.shift();
 }
 
@@ -159,6 +163,24 @@ const modificatoreDifesa = () => Conti.modificatoreDifesa(DATI, stato, PER_ID);
 const mercato = (g) => Conti.mercato(g, STRATEGIE, stato.lega);
 const divergenza = (g) => Conti.divergenza(g, STRATEGIE, stato.lega);
 const affari = (quanti) => Conti.affari(DATI, stato, STRATEGIE, quanti);
+const inLista = (g) => Conti.inLista(g, stato);
+const desiderati = () => Conti.desiderati(DATI, stato, PER_ID);
+const costoAtteso = (g) => Conti.costoAtteso(g, STRATEGIE, stato.lega);
+const massimoPer = (g) => Conti.massimoPer(g, DATI, stato, PER_ID, STRATEGIE);
+const sostenibilita = () => Conti.sostenibilita(DATI, stato, PER_ID, STRATEGIE);
+
+function cambiaDesiderio(g) {
+  ricorda();
+  if (inLista(g)) {
+    stato.desideri = stato.desideri.filter((id) => id !== g.id);
+    avviso(`${g.n} tolto dalla lista.`);
+  } else {
+    stato.desideri.push(g.id);
+    avviso(`${g.n} in lista: ${costoAtteso(g)} crediti messi da parte.`);
+  }
+  salva();
+  disegnaTutto();
+}
 
 /* ============================================================= FORMATTAZIONE */
 
@@ -584,14 +606,14 @@ function scegliPerAsta(g) {
   if (!campoPrezzo.value) campoPrezzo.value = prezzo(g);
   document.getElementById('asta-risultati').innerHTML = '';
 
-  const ruolo = repartoInCorso();
-  const tetto = ruolo === g.r ? massimoAdesso(g.r) : null;
+  const tetto = massimoPer(g);
   const atteso = mercato(g);
   const inCoda = atteso && atteso.atteso !== null
     ? ` · la stanza paga ~${atteso.atteso}` : '';
+  const stella = inLista(g) ? '★ ' : '';
   document.getElementById('asta-suggerito').textContent = tetto
-    ? `${g.n}: vale ${prezzo(g)}, il tuo tetto è ${tetto}${inCoda}`
-    : `${g.n}: vale ${prezzo(g)} crediti${inCoda}`;
+    ? `${stella}${g.n}: vale ${prezzo(g)}, il tuo tetto è ${tetto}${inCoda}`
+    : `${stella}${g.n}: vale ${prezzo(g)} crediti${inCoda}`;
 }
 
 function registra(mio) {
@@ -638,6 +660,7 @@ function annulla() {
   const passato = JSON.parse(stato.storia.pop());
   stato.rosa = passato.rosa;
   stato.venduti = passato.venduti;
+  if (Array.isArray(passato.desideri)) stato.desideri = passato.desideri;
   salva();
   disegnaTutto();
   avviso('Tornato indietro di un passo.');
@@ -645,7 +668,122 @@ function annulla() {
 
 /* ================================================================ STRATEGIA */
 
+
+function disegnaLista() {
+  const risultati = document.getElementById('lista-risultati');
+  const elenco = document.getElementById('lista-desideri');
+  const riquadro = document.getElementById('lista-sostenibilita');
+  elenco.innerHTML = '';
+  riquadro.innerHTML = '';
+
+  const lista = desiderati();
+  const esito = sostenibilita();
+  document.getElementById('lista-nota').textContent = lista.length
+    ? `${lista.length} in lista · ${esito.costo} crediti messi da parte`
+    : 'nessuno, per ora';
+
+  if (!lista.length) {
+    elenco.appendChild(elemento(`
+      <div class="vuoto">Cerca chi vuoi in rosa e mettilo in lista.
+      I suoi crediti vengono messi da parte, e il tetto sugli altri
+      dello stesso reparto scende.</div>`));
+    return;
+  }
+
+  // --- ci sta col budget? ---
+  if (esito.sfora) {
+    riquadro.appendChild(elemento(`
+      <div class="avviso" style="margin:14px 0 0">
+        <b>La lista non ci sta.</b> Costa ${esito.costo} crediti e te ne
+        restano ${esito.residuo}, con altre ${esito.altreCaselle} caselle da
+        riempire. Togli qualcuno, o preparati a rinunciarci al tavolo.
+      </div>`));
+  } else {
+    riquadro.appendChild(elemento(`
+      <div class="bilancia">
+        <div class="piatto"><div class="n">${esito.costo}</div>
+          <div class="e">Messi da parte</div></div>
+        <div class="piatto"><div class="n su">${esito.residuo - esito.costo}</div>
+          <div class="e">Per le altre ${esito.altreCaselle}</div></div>
+        <div class="piatto"><div class="n">${esito.perCasella === null
+          ? '—' : esito.perCasella}</div>
+          <div class="e">A casella</div></div>
+      </div>`));
+  }
+
+  for (const [ruolo, quanti] of Object.entries(esito.troppi || {})) {
+    riquadro.appendChild(elemento(`
+      <div class="avviso lieve" style="margin-top:9px">
+        Hai ${quanti} ${NOMI_RUOLO[ruolo].toLowerCase()} in lista più delle
+        caselle che ti restano: alcuni non li prenderai comunque.
+      </div>`));
+  }
+
+  // --- la lista, per reparto ---
+  for (const ruolo of DATI.ordine) {
+    const suoi = lista.filter((g) => g.r === ruolo);
+    if (!suoi.length) continue;
+    elenco.appendChild(elemento(`
+      <p class="nota" style="margin:14px 0 6px">${NOMI_RUOLO[ruolo]}</p>`));
+
+    for (const g of suoi.sort((a, b) => costoAtteso(b) - costoAtteso(a))) {
+      const riga = elemento(`
+        <div class="riga-gioc">
+          <span class="ruolo ${g.r}">${g.r}</span>
+          <span class="chi">
+            <b>★ ${testoSicuro(g.n)}</b>
+            <small>${testoSicuro(g.s)} · vale ${prezzo(g)} · il tuo tetto
+              ${massimoPer(g)}</small>
+          </span>
+          <span class="cifra-dx">${costoAtteso(g)}<small>da parte</small></span>
+        </div>`);
+      riga.addEventListener('click', () => apriScheda(g.id));
+      elenco.appendChild(riga);
+    }
+  }
+
+  risultati.innerHTML = '';
+}
+
+function cercaPerLista(testo) {
+  const contenitore = document.getElementById('lista-risultati');
+  contenitore.innerHTML = '';
+  const cerca = testo.trim().toLowerCase();
+  if (cerca.length < 2) return;
+
+  const trovati = DATI.giocatori
+    .filter((g) => `${g.n} ${g.nc}`.toLowerCase().includes(cerca))
+    .slice(0, 6);
+
+  if (!trovati.length) {
+    contenitore.appendChild(elemento(
+      '<div class="vuoto">Nessuno con questo nome.</div>'));
+    return;
+  }
+
+  for (const g of trovati) {
+    const nodo = elemento(`
+      <button class="riga-gioc">
+        <span class="ruolo ${g.r}">${g.r}</span>
+        <span class="chi">
+          <b>${inLista(g) ? '★ ' : ''}${testoSicuro(g.n)}</b>
+          <small>${testoSicuro(g.s)} · vale ${prezzo(g)} · serviranno
+            ~${costoAtteso(g)}</small>
+        </span>
+        <span class="cifra-dx">${inLista(g) ? '−' : '+'}<small>${
+          inLista(g) ? 'togli' : 'aggiungi'}</small></span>
+      </button>`);
+    nodo.addEventListener('click', () => {
+      cambiaDesiderio(g);
+      document.getElementById('lista-cerca').value = '';
+      contenitore.innerHTML = '';
+    });
+    contenitore.appendChild(nodo);
+  }
+}
+
 function disegnaStrategia() {
+  disegnaLista();
   // --- come si spartisce il budget ---
   const riparto = document.getElementById('riparto-reparti');
   riparto.innerHTML = '';
@@ -1059,7 +1197,7 @@ function apriScheda(id) {
 
   const inRosa = stato.rosa.find((voce) => voce.id === id);
   const daAltri = stato.venduti.find((voce) => voce.id === id);
-  const tetto = massimoAdesso(g.r);
+  const tetto = massimoPer(g);
 
   const dato = (numero, etichetta) =>
     `<div class="dato"><div class="n">${numero}</div><div class="e">${etichetta}</div></div>`;
@@ -1224,6 +1362,10 @@ function apriScheda(id) {
 
     <div class="azioni-scheda">
       ${inRosa || daAltri ? '' : `
+        <button class="bottone ${inLista(g) ? 'fantasma' : ''}" data-azione="lista">
+          ${inLista(g) ? '★ Togli dalla lista' : '☆ Mettilo in lista'}
+        </button>`}
+      ${inRosa || daAltri ? '' : `
         <button class="bottone" data-azione="mio">L'ho preso io</button>
         <button class="bottone fantasma" data-azione="altri">Preso da altri</button>`}
       ${inRosa || daAltri ? '<button class="bottone fantasma" data-azione="libera">Rimettilo in asta</button>' : ''}
@@ -1243,7 +1385,10 @@ function apriScheda(id) {
   document.body.style.overflow = 'hidden';
 }
 
-function consiglioAsta(g, tetto, inRosa, daAltri) {
+function consiglioAsta(g, tettoGenerico, inRosa, daAltri) {
+  // Il tetto del singolo, non quello medio della casella: se e' in lista puo'
+  // salire, se non lo e' scende di quanto e' gia' promesso agli altri.
+  const tetto = massimoPer(g);
   if (inRosa) return `È tuo, pagato ${inRosa.prezzo} crediti.`;
   if (daAltri) return `Preso da un altro per ${daAltri.prezzo} crediti.`;
 
@@ -1253,6 +1398,13 @@ function consiglioAsta(g, tetto, inRosa, daAltri) {
   if (g.out && g.out.grave) {
     return `Vale ${suo} crediti, ma è fermo. Comprarlo adesso significa
       una casella vuota finché non rientra.`;
+  }
+  if (inLista(g)) {
+    const atteso = costoAtteso(g);
+    return `<b>È nella tua lista.</b> Vale ${suo} crediti, ne servono circa
+      ${atteso} per prenderlo, e il tuo tetto su di lui è ${tetto} perché quei
+      crediti sono già messi da parte. Sopra ${tetto} stai togliendo una
+      casella a un altro reparto.`;
   }
   if (suo > tetto) {
     return `Vale ${suo} crediti, ma il tuo tetto per questa casella è ${tetto}:
@@ -1273,6 +1425,7 @@ function consiglioAsta(g, tetto, inRosa, daAltri) {
 
 function azioneScheda(azione, g) {
   if (azione === 'chiudi') { chiudiScheda(); return; }
+  if (azione === 'lista') { cambiaDesiderio(g); chiudiScheda(); return; }
 
   ricorda();
   if (azione === 'libera') {
@@ -1313,7 +1466,7 @@ function chiudiScheda() {
 function salvaCopia() {
   const contenuto = JSON.stringify({
     lega: stato.lega, rosa: stato.rosa, venduti: stato.venduti,
-    salvato: new Date().toISOString(),
+    desideri: stato.desideri, salvato: new Date().toISOString(),
   }, null, 2);
 
   const url = URL.createObjectURL(new Blob([contenuto], { type: 'application/json' }));
@@ -1335,6 +1488,7 @@ function rimettiDentro(file) {
       if (letto.lega) stato.lega = letto.lega;
       stato.rosa = letto.rosa;
       stato.venduti = Array.isArray(letto.venduti) ? letto.venduti : [];
+      stato.desideri = Array.isArray(letto.desideri) ? letto.desideri : [];
       salva();
       disegnaTutto();
       avviso(`Rimessa dentro: ${stato.rosa.length} acquisti.`);
@@ -1475,6 +1629,10 @@ function collegaEventi() {
   document.getElementById('asta-mio').addEventListener('click', () => registra(true));
   document.getElementById('asta-altri').addEventListener('click', () => registra(false));
   document.getElementById('annulla').addEventListener('click', annulla);
+
+  document.getElementById('lista-cerca').addEventListener('input', (evento) => {
+    cercaPerLista(evento.target.value);
+  });
 
   document.getElementById('scambio-cedi').addEventListener('input', (evento) => {
     scambioCedi = null;

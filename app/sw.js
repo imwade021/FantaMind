@@ -8,7 +8,7 @@
    mai quando non puo'.
    ------------------------------------------------------------------ */
 
-const VERSIONE = 'fantamind-v7';
+const VERSIONE = 'fantamind-v8';
 
 const GUSCIO = [
   './',
