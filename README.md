@@ -122,6 +122,24 @@ Pages è l'unico modo, e si fa una volta sola.
 
 ## Usarla
 
+### Prima dell'asta — la tua lista
+
+In Strategia, cerca chi vuoi in rosa e mettilo in lista. Non è un segnalibro:
+i suoi crediti vengono **messi da parte**, e questo cambia i consigli.
+
+Su un giocatore in lista il tetto sale, perché hai deciso che quello lo vuoi.
+Su tutti gli altri dello stesso reparto scende, perché quei crediti sono già
+promessi. È il senso della cosa: una lista che non toglie niente a nessuno non
+sta cambiando nessuna decisione.
+
+Quanto si mette da parte è il maggiore fra il tuo prezzo e quello che pagherà
+la stanza: se i creator dicono 52 e tu lo prezzi 23, riservare 23 significa
+non prenderlo.
+
+Il riquadro in cima dice se la lista sta in piedi: quanto costa, quanto resta
+per le altre caselle e quanto viene a casella. Se sfora te lo dice prima
+dell'asta, non a metà.
+
 ### Prima dell'asta — Strategia
 
 Quanti crediti mettere su ogni reparto, chi guardare, com'è fatta la fila
