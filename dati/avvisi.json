@@ -8,14 +8,6 @@
   "lega": "Serie B"
  },
  {
-  "nome": "P. Nuamah",
-  "squadra": "Sassuolo",
-  "ruolo": "A",
-  "presenze": 28,
-  "gol": 13,
-  "lega": "Serie B"
- },
- {
   "nome": "A. Kostić",
   "squadra": "Milan",
   "ruolo": "A",
@@ -32,14 +24,6 @@
   "lega": "Eliteserien"
  },
  {
-  "nome": "L. Banda",
-  "squadra": "Lecce",
-  "ruolo": "A",
-  "presenze": 32,
-  "gol": 5,
-  "lega": "Serie A"
- },
- {
   "nome": "L. Banovec",
   "squadra": "Como",
   "ruolo": "C",
@@ -54,14 +38,6 @@
   "presenze": 31,
   "gol": 3,
   "lega": "Serie A"
- },
- {
-  "nome": "A. Joujou",
-  "squadra": "Parma",
-  "ruolo": "A",
-  "presenze": 23,
-  "gol": 3,
-  "lega": "Primeira Liga"
  },
  {
   "nome": "W. Cheddira",
@@ -104,14 +80,6 @@
   "lega": "Serie B"
  },
  {
-  "nome": "A. Okoro",
-  "squadra": "Venezia",
-  "ruolo": "C",
-  "presenze": 18,
-  "gol": 2,
-  "lega": "Serie B"
- },
- {
   "nome": "Lamine Dabo",
   "squadra": "Venezia",
   "ruolo": "C",
@@ -120,28 +88,12 @@
   "lega": "League One"
  },
  {
-  "nome": "R. Kouda",
-  "squadra": "Parma",
-  "ruolo": "C",
-  "presenze": 15,
-  "gol": 1,
-  "lega": "Serie B"
- },
- {
   "nome": "C. Ligue",
   "squadra": "Venezia",
   "ruolo": "D",
   "presenze": 15,
   "gol": 1,
   "lega": "Schweizer Cup"
- },
- {
-  "nome": "M. Dalla Vecchia",
-  "squadra": "Torino",
-  "ruolo": "C",
-  "presenze": 32,
-  "gol": 0,
-  "lega": "Serie B"
  },
  {
   "nome": "N. Obaretin",
@@ -206,14 +158,6 @@
   "presenze": 11,
   "gol": 0,
   "lega": "Serie A"
- },
- {
-  "nome": "E. Bohinen",
-  "squadra": "Venezia",
-  "ruolo": "C",
-  "presenze": 11,
-  "gol": 0,
-  "lega": "Serie B"
  },
  {
   "nome": "S. Wiafe",
