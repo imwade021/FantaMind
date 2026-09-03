@@ -124,6 +124,10 @@
    "dal": "2026-09-01",
    "motivo": "Muscle Injury"
   },
+  "303362": {
+   "dal": "2026-09-03",
+   "motivo": "Injury"
+  },
   "30396": {
    "dal": "2026-09-01",
    "motivo": "Illness"
@@ -331,6 +335,10 @@
   "881": {
    "dal": "2026-09-01",
    "motivo": "Groin Injury"
+  },
+  "903": {
+   "dal": "2026-09-03",
+   "motivo": "Heart Problems"
   },
   "94562": {
    "dal": "2026-09-01",
@@ -3019,6 +3027,7 @@
    "presenze_totali": 39,
    "squadre_stagione": 1
   },
+  "2025:aleksandr ballabio": "vuoto",
   "2025:alessandro bastoni": {
    "assist": 4,
    "campionati": [
@@ -3802,6 +3811,7 @@
    "squadre_stagione": 1
   },
   "2025:berat djimsiti": "vuoto",
+  "2025:besalet krasniqi": "vuoto",
   "2025:billy gilmour": {
    "assist": 0,
    "campionati": [

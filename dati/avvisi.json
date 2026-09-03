@@ -1,21 +1,5 @@
 [
  {
-  "nome": "G. Artistico",
-  "squadra": "Lazio",
-  "ruolo": "A",
-  "presenze": 31,
-  "gol": 13,
-  "lega": "Serie B"
- },
- {
-  "nome": "A. Kostić",
-  "squadra": "Milan",
-  "ruolo": "A",
-  "presenze": 35,
-  "gol": 11,
-  "lega": "Super Liga"
- },
- {
   "nome": "M. Farji",
   "squadra": "Venezia",
   "ruolo": "A",
@@ -36,14 +20,6 @@
   "squadra": "Roma",
   "ruolo": "D",
   "presenze": 31,
-  "gol": 3,
-  "lega": "Serie A"
- },
- {
-  "nome": "W. Cheddira",
-  "squadra": "Napoli",
-  "ruolo": "A",
-  "presenze": 17,
   "gol": 3,
   "lega": "Serie A"
  },
@@ -94,14 +70,6 @@
   "presenze": 15,
   "gol": 1,
   "lega": "Schweizer Cup"
- },
- {
-  "nome": "N. Obaretin",
-  "squadra": "Napoli",
-  "ruolo": "D",
-  "presenze": 29,
-  "gol": 0,
-  "lega": "Serie B"
  },
  {
   "nome": "A. Ghion",
