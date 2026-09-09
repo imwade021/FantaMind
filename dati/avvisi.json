@@ -1,11 +1,27 @@
 [
  {
+  "nome": "J. Enem",
+  "squadra": "Bologna",
+  "ruolo": "A",
+  "presenze": 17,
+  "gol": 10,
+  "lega": "Super Liga"
+ },
+ {
   "nome": "M. Farji",
   "squadra": "Venezia",
   "ruolo": "A",
   "presenze": 29,
   "gol": 9,
   "lega": "Eliteserien"
+ },
+ {
+  "nome": "E. Zeballos",
+  "squadra": "Monza",
+  "ruolo": "A",
+  "presenze": 30,
+  "gol": 5,
+  "lega": "Liga Profesional Argentina"
  },
  {
   "nome": "L. Banovec",
@@ -20,6 +36,22 @@
   "squadra": "Roma",
   "ruolo": "D",
   "presenze": 31,
+  "gol": 3,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "S. Mbangula",
+  "squadra": "Bologna",
+  "ruolo": "A",
+  "presenze": 26,
+  "gol": 3,
+  "lega": "Bundesliga"
+ },
+ {
+  "nome": "M&apos;Bala Nzola",
+  "squadra": "Cagliari",
+  "ruolo": "A",
+  "presenze": 16,
   "gol": 3,
   "lega": "Serie A"
  },
@@ -56,6 +88,22 @@
   "lega": "Serie B"
  },
  {
+  "nome": "O. Hutchinson",
+  "squadra": "Milan",
+  "ruolo": "A",
+  "presenze": 31,
+  "gol": 1,
+  "lega": "Premier League"
+ },
+ {
+  "nome": "R. Gagliardini",
+  "squadra": "Cagliari",
+  "ruolo": "C",
+  "presenze": 29,
+  "gol": 1,
+  "lega": "Serie A"
+ },
+ {
   "nome": "Lamine Dabo",
   "squadra": "Venezia",
   "ruolo": "C",
@@ -72,20 +120,20 @@
   "lega": "Schweizer Cup"
  },
  {
+  "nome": "Y. Sugawara",
+  "squadra": "Cagliari",
+  "ruolo": "D",
+  "presenze": 31,
+  "gol": 0,
+  "lega": "Bundesliga"
+ },
+ {
   "nome": "A. Ghion",
   "squadra": "Sassuolo",
   "ruolo": "C",
   "presenze": 26,
   "gol": 0,
   "lega": "Serie B"
- },
- {
-  "nome": "J. Lindstrøm",
-  "squadra": "Napoli",
-  "ruolo": "C",
-  "presenze": 15,
-  "gol": 0,
-  "lega": "Bundesliga"
  },
  {
   "nome": "S. Bocoum",
@@ -97,19 +145,19 @@
  },
  {
   "nome": "S. Goglichidze",
-  "squadra": "Udinese",
+  "squadra": "Monza",
   "ruolo": "D",
   "presenze": 12,
   "gol": 0,
   "lega": "Championship"
  },
  {
-  "nome": "N. Galazzi",
-  "squadra": "Monza",
-  "ruolo": "C",
-  "presenze": 11,
+  "nome": "S. Goglichidze",
+  "squadra": "Udinese",
+  "ruolo": "D",
+  "presenze": 12,
   "gol": 0,
-  "lega": "Serie B"
+  "lega": "Championship"
  },
  {
   "nome": "A. N&apos;Diaye",
@@ -150,13 +198,5 @@
   "presenze": 8,
   "gol": 0,
   "lega": "Serie A"
- },
- {
-  "nome": "N. Cavuoti",
-  "squadra": "Cagliari",
-  "ruolo": "C",
-  "presenze": 7,
-  "gol": 0,
-  "lega": "Serie B"
  }
 ]
