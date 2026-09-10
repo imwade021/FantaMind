@@ -1,5 +1,13 @@
 [
  {
+  "nome": "Pote",
+  "squadra": "Fiorentina",
+  "ruolo": "C",
+  "presenze": 26,
+  "gol": 12,
+  "lega": "Primeira Liga"
+ },
+ {
   "nome": "J. Enem",
   "squadra": "Bologna",
   "ruolo": "A",
@@ -8,12 +16,20 @@
   "lega": "Super Liga"
  },
  {
-  "nome": "M. Farji",
-  "squadra": "Venezia",
+  "nome": "Beto",
+  "squadra": "Fiorentina",
   "ruolo": "A",
-  "presenze": 29,
+  "presenze": 37,
   "gol": 9,
-  "lega": "Eliteserien"
+  "lega": "Premier League"
+ },
+ {
+  "nome": "N. Woltemade",
+  "squadra": "Juventus",
+  "ruolo": "A",
+  "presenze": 33,
+  "gol": 8,
+  "lega": "Premier League"
  },
  {
   "nome": "E. Zeballos",
@@ -56,14 +72,6 @@
   "lega": "Serie A"
  },
  {
-  "nome": "M&apos;Bala Nzola",
-  "squadra": "Fiorentina",
-  "ruolo": "A",
-  "presenze": 16,
-  "gol": 3,
-  "lega": "Serie A"
- },
- {
   "nome": "E. Del Prato",
   "squadra": "Parma",
   "ruolo": "D",
@@ -72,10 +80,34 @@
   "lega": "Serie A"
  },
  {
+  "nome": "K. Ehizibue",
+  "squadra": "Genoa",
+  "ruolo": "D",
+  "presenze": 32,
+  "gol": 2,
+  "lega": "Serie A"
+ },
+ {
   "nome": "K. N’Dri",
   "squadra": "Lecce",
-  "ruolo": "A",
+  "ruolo": "C",
   "presenze": 27,
+  "gol": 2,
+  "lega": "Serie A"
+ },
+ {
+  "nome": "P. Sarr",
+  "squadra": "Juventus",
+  "ruolo": "C",
+  "presenze": 26,
+  "gol": 2,
+  "lega": "Premier League"
+ },
+ {
+  "nome": "R. Belghali",
+  "squadra": "Torino",
+  "ruolo": "D",
+  "presenze": 26,
   "gol": 2,
   "lega": "Serie A"
  },
@@ -86,6 +118,14 @@
   "presenze": 21,
   "gol": 2,
   "lega": "Serie B"
+ },
+ {
+  "nome": "R. Mohammed",
+  "squadra": "Venezia",
+  "ruolo": "D",
+  "presenze": 16,
+  "gol": 2,
+  "lega": "Allsvenskan"
  },
  {
   "nome": "O. Hutchinson",
@@ -104,12 +144,28 @@
   "lega": "Serie A"
  },
  {
+  "nome": "D. Ćaleta-Car",
+  "squadra": "Sassuolo",
+  "ruolo": "D",
+  "presenze": 27,
+  "gol": 1,
+  "lega": "La Liga"
+ },
+ {
   "nome": "Lamine Dabo",
   "squadra": "Venezia",
   "ruolo": "C",
   "presenze": 21,
   "gol": 1,
   "lega": "League One"
+ },
+ {
+  "nome": "S. El Shaarawy",
+  "squadra": "Genoa",
+  "ruolo": "A",
+  "presenze": 20,
+  "gol": 1,
+  "lega": "Serie A"
  },
  {
   "nome": "C. Ligue",
@@ -136,6 +192,38 @@
   "lega": "Serie B"
  },
  {
+  "nome": "W. Gnonto",
+  "squadra": "Fiorentina",
+  "ruolo": "A",
+  "presenze": 23,
+  "gol": 0,
+  "lega": "Premier League"
+ },
+ {
+  "nome": "C. Drameh",
+  "squadra": "Genoa",
+  "ruolo": "D",
+  "presenze": 23,
+  "gol": 0,
+  "lega": "Championship"
+ },
+ {
+  "nome": "S. Ghidotti",
+  "squadra": "Parma",
+  "ruolo": "P",
+  "presenze": 20,
+  "gol": 0,
+  "lega": "Serie B"
+ },
+ {
+  "nome": "Nikita Solodchenko",
+  "squadra": "Genoa",
+  "ruolo": "C",
+  "presenze": 15,
+  "gol": 0,
+  "lega": "Serie A"
+ },
+ {
   "nome": "S. Bocoum",
   "squadra": "Milan",
   "ruolo": "D",
@@ -146,14 +234,6 @@
  {
   "nome": "S. Goglichidze",
   "squadra": "Monza",
-  "ruolo": "D",
-  "presenze": 12,
-  "gol": 0,
-  "lega": "Championship"
- },
- {
-  "nome": "S. Goglichidze",
-  "squadra": "Udinese",
   "ruolo": "D",
   "presenze": 12,
   "gol": 0,
@@ -178,7 +258,7 @@
  {
   "nome": "S. Wiafe",
   "squadra": "Genoa",
-  "ruolo": "C",
+  "ruolo": "A",
   "presenze": 9,
   "gol": 0,
   "lega": "Serie B"
@@ -198,5 +278,21 @@
   "presenze": 8,
   "gol": 0,
   "lega": "Serie A"
+ },
+ {
+  "nome": "N. Patterson",
+  "squadra": "Torino",
+  "ruolo": "D",
+  "presenze": 7,
+  "gol": 0,
+  "lega": "Premier League"
+ },
+ {
+  "nome": "L. Skjellerup",
+  "squadra": "Sassuolo",
+  "ruolo": "A",
+  "presenze": 6,
+  "gol": 0,
+  "lega": "Serie B"
  }
 ]
